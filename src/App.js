@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import CreateQuestion from './components/CreateQuestion/CreateQuestion';
+import CreateQuestion from './components/CreateQuestion2/CreateQuestion';
 
 function App() {
   return (
