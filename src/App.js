@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import CreateQuestion from './components/CreateQuestion2/CreateQuestion';
+import RouteComponent from './components/RouteComponent/RouteComponent';
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
       </header>
       <div className="container body">
         <div className="main_container">
-          <CreateQuestion/>
+          <RouteComponent/>
         </div>
       </div>
     </div>

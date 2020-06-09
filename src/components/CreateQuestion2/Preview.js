@@ -79,21 +79,30 @@ class Preview extends React.Component {
         <div>
           <Typography use="overline">{'Match ' + (step + 1)}</Typography>
           <br/>
-          <Typography
+          {/* <Typography
             use="caption"
             // tag="div"
             theme="textSecondaryOnBackground"
           >
-              <Latex>{ this.question.answer.matchText }</Latex>
-          </Typography>
+              <Latex>{ matchRow.matchText }</Latex>
+          </Typography> */}
           <div>
-            <Typography use="overline">Answer</Typography>
+            <Typography use="overline">Match Question</Typography>
             &nbsp;
-            <Typography use="caption">{this.question.answer.answerText}</Typography>
+            <Typography use="caption">
+              <Latex>{matchRow.matchText}</Latex>
+            </Typography>
+          </div>
+          <div>
+            <Typography use="overline">Match Answer</Typography>
+            &nbsp;
+            <Typography use="caption">
+              <Latex>{matchRow.answerText}</Latex>
+            </Typography>
           </div>
           <List>
-          <ListDivider />
-        </List>
+            <ListDivider />
+          </List>
       </div>
       </div>
     );
@@ -125,7 +134,9 @@ class Preview extends React.Component {
             // tag="div"
             theme="textSecondaryOnBackground"
           >
-              <Latex>{ this.question.answer.mcqA }</Latex>
+          {
+            this.question.answer.map((h,i)=>this.generateMatchSetPreview(h,i))
+          }
           </Typography>
         </div>
         <List>

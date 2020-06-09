@@ -29,6 +29,7 @@ class CreateQuestion extends React.Component {
       },
       question:{
         difficulty: '',
+        type: 'STANDARD',
         question:{text:''},
         answer: { mcqA: '', mcqB: '', mcqC: '', mcqD: '',},
         timeTosolve: 30,

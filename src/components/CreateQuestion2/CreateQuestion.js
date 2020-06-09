@@ -30,7 +30,8 @@ class CreateQuestion extends React.Component {
       },
       question:{
         difficulty: '',
-        question:{text:'Match the following:'},
+        type: 'MATCH',
+        question:{text:''},
         answer:[],
         timeTosolve: 30,
         allotedMarks: 1.0,
@@ -53,8 +54,7 @@ class CreateQuestion extends React.Component {
   addMatch= e =>{
     let {answer}=this.state.question;
     answer.push({matchText:'',answerText:'',});
-    this.setState(answer);
-
+    this.setState({answer});
   }
 
   removeMatch = (e, index) =>{
@@ -69,7 +69,7 @@ class CreateQuestion extends React.Component {
       answer[index][fieldName] = e.target.value;
       this.setState(answer);
     }
-  
+
 
   addHint = e =>{
     // TBA
@@ -132,7 +132,7 @@ class CreateQuestion extends React.Component {
         };
         let question = {
           difficulty: '',
-          question:{text:'Match the following:'},
+          question:{text:''},
           answer: [],
           timeTosolve: 30,
           allotedMarks: 1.0,
@@ -258,13 +258,14 @@ class CreateQuestion extends React.Component {
                   </GridRow>
                   <GridRow><div> <br/></div></GridRow>
             </Grid>
-           
-            <MatchSet matchRows={this.state.question.answer}
-            onMatchChange={this.onMatchChange}
-            addMatch={this.addMatch}
-            removeMatch={this.removeMatch}
-            />; 
-            
+
+            <MatchSet
+              matchRows={this.state.question.answer}
+              onMatchChange={this.onMatchChange}
+              addMatch={this.addMatch}
+              removeMatch={this.removeMatch}
+            />
+
             </div>
             <div> <br/></div>
             <QuestionAssistance

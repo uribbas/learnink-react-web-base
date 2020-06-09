@@ -13,6 +13,11 @@
 
 # configs accounts of the app
 /src/configs/firebase.js
+.firebaseserc
+firebase.json
+firestore.indexes.json
+firestore.rules
+storage.rules
 
 # misc
 .DS_Store

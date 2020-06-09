@@ -18,7 +18,7 @@ class MatchRow extends React.Component {
       // TBA
       dummy: true,
     };
-    this.matchRow=this.props.matchText;
+    this.matchRow=this.props.matchRow;
     this.step = this.props.step;
     this.onMatchChange = this.props.onMatchChange;
     this.removeMatch= this.props.removeMatch;
@@ -41,7 +41,19 @@ class MatchRow extends React.Component {
     return (
       <Grid key={this.step}>
       <GridRow>
-        <GridCell span={1}> <span>{'Match ' + (this.step + 1)}</span> </GridCell>
+        <GridCell span={2}>
+          <Button type="button" label={"Row Match " + (this.step+1)}
+          />
+        </GridCell>
+        <GridCell span={1}>
+          <Button type="button" label="remove"
+            danger
+            raised
+            //disabled={this.step==0}
+            onClick={(e)=>this.removeMatch(e,this.step)}
+          />
+        </GridCell>
+        <GridCell span={9}></GridCell>
         <GridCell span={3}>
           <TextField
              textarea
@@ -58,6 +70,7 @@ class MatchRow extends React.Component {
                 validationMsg: true,
                 children: 'The field is required'
               }}
+              value={this.matchRow.matchText}
               onChange={(e)=>this.onMatchChange(e,'matchText',this.step)}
             />
           </GridCell>
@@ -76,17 +89,10 @@ class MatchRow extends React.Component {
                   validationMsg: true,
                   children: 'The field is required'
                 }}
+                value={this.matchRow.answerText}
                 onChange={(e)=>this.onMatchChange(e,'answerText',this.step)}
               />
             </GridCell>
-            
-          <GridCell span={2}>
-            <Button type="button" label="remove"
-              danger
-              raised
-              //disabled={this.step==0}
-              onClick={(e)=>this.removeMatch(e,this.step)}/>
-          </GridCell>
       </GridRow>
     </Grid>
     )

@@ -46,7 +46,7 @@ class MatchSet extends React.Component {
             {
               this.matchRows.map((matchRow,idx)=>{
                     return <MatchRow
-                                MatchRow={matchRow}
+                                matchRow={matchRow}
                                 step={idx}
                                 totalSteps={this.matchRows.length}
                                 onMatchChange={this.onMatchChange}
