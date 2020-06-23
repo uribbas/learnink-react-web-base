@@ -1,42 +1,55 @@
 import React from 'react';
+import {
+  Route,
+  HashRouter
+} from "react-router-dom";
 import DrawerMenu from './DrawerMenu';
 import CreateQuestion1 from '../CreateQuestion1/CreateQuestion';
 import CreateQuestion2 from '../CreateQuestion2/CreateQuestion';
+import MaintainCatalogue from '../MaintainCatalogue/MaintainCatalogue';
+import QuestionList from '../QuestionList/QuestionList';
 
 class RouteComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       // TODO
-      questionType: 'Standard question',
+      componentProps: {},
     };
-    this.onClickQuestion = this.onClickQuestion.bind(this);
+    this.setComponentProps = this.setComponentProps.bind(this);
   }
 
-  onClickQuestion(questionType){
-    console.log("clicked questionType", this.state.questionType, questionType);
-    this.setState({questionType: questionType});
+  setComponentProps(componentProps){
+    console.log("shared componentProps", componentProps);
+    this.setState({componentProps: componentProps});
   }
 
   render(){
-    let {questionType} = this.state;
-    console.log("render questionType", this.state.questionType, questionType);
+    let {componentProps} = this.state;
     return (
-      <div>
-        <div className="drawer">
-          <DrawerMenu
-            onClickQuestion={this.onClickQuestion}
-          />
+      <HashRouter>
+        <div>
+          <div className="drawer">
+            <DrawerMenu />
+          </div>
+          <Route exact path="/" component={()=><MaintainCatalogue {...componentProps} setComponentProps={this.setComponentProps}/>}/>
+          <Route path="/standard-question" component={()=><CreateQuestion1 {...componentProps} setComponentProps={this.setComponentProps}/>}/>
+          <Route path="/match-sides" component={()=><CreateQuestion2 {...componentProps} setComponentProps={this.setComponentProps}/>}/>
+          <Route path="/question-list" component={()=><QuestionList {...componentProps} setComponentProps={this.setComponentProps}/>}/>
+          {/* {
+            this.state.questionType == 'Standard question' &&
+            <CreateQuestion1 />
+          }
+          {
+            this.state.questionType == 'Match Sides' &&
+            <CreateQuestion2 />
+          }
+          {
+            this.state.questionType == 'Maintain Catalogue' &&
+            <MaintainCatalogue />
+          } */}
         </div>
-        {
-          this.state.questionType == 'Standard question' &&
-          <CreateQuestion1 />
-        }
-        {
-          this.state.questionType == 'Match Sides' &&
-          <CreateQuestion2 />
-        }
-      </div>
+      </HashRouter>
     );
   }
 

@@ -40,29 +40,29 @@ class Preview extends React.Component {
           <div>
             <Typography use="overline">Answer</Typography>
             &nbsp;
-            <Typography use="caption">{hint.answer}</Typography>
+            <Typography use="caption"><Latex>{hint.answer}</Latex></Typography>
           </div>
           <div>
             <Typography use="overline">Correct</Typography>
             <br/>
             <Typography use="subtitle2">Next Step</Typography>
             &nbsp;
-            <Typography use="caption">{hint.isCorrectStep}</Typography>
+            <Typography use="caption"><Latex>{hint.isCorrectStep}</Latex></Typography>
             &nbsp;
             <Typography use="subtitle2">Feedback</Typography>
             &nbsp;
-            <Typography use="caption">{hint.isCorrectFeedback}</Typography>
+            <Typography use="caption"><Latex>{hint.isCorrectFeedback}</Latex></Typography>
           </div>
           <div>
             <Typography use="overline">Incorrect</Typography>
             <br/>
             <Typography use="subtitle2">Next Step</Typography>
             &nbsp;
-            <Typography use="caption">{hint.isWrongStep}</Typography>
+            <Typography use="caption"><Latex>{hint.isWrongStep}</Latex></Typography>
             &nbsp;
             <Typography use="subtitle2">Feedback</Typography>
             &nbsp;
-            <Typography use="caption">{hint.isWrongFeedback}</Typography>
+            <Typography use="caption"><Latex>{hint.isWrongFeedback}</Latex></Typography>
           </div>
         </div>
         <List>

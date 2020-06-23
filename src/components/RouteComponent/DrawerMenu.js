@@ -1,4 +1,8 @@
 import React from 'react';
+import {
+  NavLink,
+  HashRouter
+} from "react-router-dom";
 import { Drawer, DrawerHeader, DrawerTitle, DrawerSubtitle, DrawerContent } from '@rmwc/drawer';
 import { List, ListItem } from '@rmwc/list';
 import { IconButton } from '@rmwc/icon-button';
@@ -18,11 +22,11 @@ class DrawerMenu extends React.Component {
       // TODO
       open: false,
     };
-    this.onClickQuestion = this.props.onClickQuestion;
+    // this.onClickMenu = this.props.onClickMenu;
   }
 
-  onClickListItem(questionType){
-    this.onClickQuestion(questionType);
+  onClickListItem(componentProps){
+    // this.onClickMenu(componentProps);
     this.setState({open: false});
   }
 
@@ -45,8 +49,9 @@ class DrawerMenu extends React.Component {
 
             <DrawerContent dir="ltr">
               <List>
-                <ListItem onClick={()=>this.onClickListItem('Standard question')}>Standard question</ListItem>
-                <ListItem onClick={()=>this.onClickListItem('Match Sides')}>Match Sides</ListItem>
+                <NavLink to="/" style={{textDecorationLine: 'none'}}><ListItem onClick={()=>this.onClickListItem('Maintain Catalogue')}>Maintain Catalogue</ListItem></NavLink>
+                <NavLink to="/standard-question" style={{textDecorationLine: 'none'}}><ListItem onClick={()=>this.onClickListItem('Standard question')}>Standard question</ListItem></NavLink>
+                <NavLink to="/match-sides" style={{textDecorationLine: 'none'}}><ListItem onClick={()=>this.onClickListItem('Match Sides')}>Match Sides</ListItem></NavLink>
                 <ListItem >Fill in the blanks</ListItem>
               </List>
             </DrawerContent>

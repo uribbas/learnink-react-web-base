@@ -132,8 +132,9 @@ class CreateQuestion extends React.Component {
         };
         let question = {
           difficulty: '',
+          type: 'MATCH',
           question:{text:''},
-          answer: [],
+          answer:[],
           timeTosolve: 30,
           allotedMarks: 1.0,
           stats:{ correctCount:0, wrongCount:0, skipCount:0},

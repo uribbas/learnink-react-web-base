@@ -17,12 +17,16 @@ class QuestionAssistance extends React.Component {
     super(props);
     this.state = {
       // TBA
-      dummy: true,
+      hints: [],
     };
     this.hints = this.props.hints;
     this.addHint = this.props.addHint;
     this.onFieldChange = this.props.onFieldChange;
     this.removeHint = this.props.removeHint;
+  }
+
+  componentDidMount(){
+    this.setState({hints: this.hints});
   }
 
   componentDidUpdate(prevProps) {
@@ -33,7 +37,8 @@ class QuestionAssistance extends React.Component {
       this.onFieldChange = this.props.onFieldChange;
       this.removeHint = this.props.removeHint;
       // force re-render the DOM
-      this.setState({dummy: true});
+      console.log("QuestionAssistance", this.hints);
+      this.setState({hints: this.hints});
     }
   }
 
@@ -48,11 +53,11 @@ class QuestionAssistance extends React.Component {
         </div>
         <div style={{padding: '1rem'}}>
             {
-              this.hints.map((hint,idx)=>{
+              this.state.hints.map((hint,idx)=>{
                     return <HintRow
                                 hint={hint}
                                 step={idx}
-                                totalSteps={this.hints.length}
+                                totalSteps={this.state.hints.length}
                                 onFieldChange={this.onFieldChange}
                                 removeHint={this.removeHint}
                               />

@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  NavLink,
+} from "react-router-dom";
+import Latex from 'react-latex';
+
 import firebase from '../../provider/database';
 import QuestionAssistance from './QuestionAssistance';
 import Preview from './Preview';
@@ -7,27 +12,30 @@ import { Select } from '@rmwc/select';
 import { Grid, GridCell, GridRow } from '@rmwc/grid';
 import { TextField } from '@rmwc/textfield';
 import { Button } from '@rmwc/button';
+import { Typography } from '@rmwc/typography';
 // import { SimpleDialog } from '@rmwc/dialog';
 // Material UI style
 import '@rmwc/select/styles';
 import '@rmwc/grid/styles';
 import '@rmwc/textfield/styles';
 import '@rmwc/button/styles';
+import '@rmwc/typography/styles';
 // import '@rmwc/dialog/styles';
+// Katex css
+import 'katex/dist/katex.min.css'
 
 class CreateQuestion extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       // TBA
+      savedSuccessfully: false,
       showPreview: false,
-      chapter:{
+      id: null,
+      question:{
         gradeId: '',
         subjectId: '',
         chapterId: '',
-        // summary: { easy: 0, moderate: 0, difficult: 0, exceptional: 0},
-      },
-      question:{
         difficulty: '',
         type: 'STANDARD',
         question:{text:''},
@@ -48,6 +56,13 @@ class CreateQuestion extends React.Component {
         },
       ],
     };
+    console.log("State and props", this.props, this.state);
+    this.setComponentProps = this.props.setComponentProps;
+
+  }
+
+  componentDidMount(){
+    this.populateQuestionFields(this.props.question, this.props.id);
   }
 
   addHint = e =>{
@@ -88,110 +103,166 @@ class CreateQuestion extends React.Component {
     this.setState(hints);
   }
 
+  textFieldPreview(text){
+    return (
+      <div >
+        <Typography use="overline">Preview</Typography>
+        <br/>
+        <Typography
+          use="caption"
+          // tag="div"
+          theme="textSecondaryOnBackground"
+        >
+            <Latex>{ text }</Latex>
+        </Typography>
+      </div>
+    );
+  }
+
+  populateQuestionFields(q,id){
+    let {question, hints} = this.state;
+    Object.assign(question,q);
+    if(q.assistance) {
+      hints=[];
+      Object.keys(question.assistance).forEach((h,i)=>{
+                hints.push({...question.assistance[h]});
+              });
+    }
+
+    console.log("hints",hints);
+    this.setState({hints,question,id});
+  }
+
   addQuestion = e => {
     e.preventDefault();
     const db = firebase.firestore();
 
-    let {hints, chapter, question} = this.state;
+    let {hints, question, id} = this.state;
     hints.forEach((h,i)=>{
               question.assistance[i.toString()] = {...h};
             });
-    Object.assign(question, chapter);
+    // Object.assign(question, chapter);
     console.log("final structure of question", question);
     // create the question
-    db.collection("questions")
-    .add(question)
-    .then(() => {
-        let showPreview = false;
-        let chapter = {
-          gradeId: '',
-          subjectId: '',
-          chapterId: '',
-          // summary: { easy: 0, moderate: 0, difficult: 0, exceptional: 0},
-        };
-        let question = {
-          difficulty: '',
-          question:{text:''},
-          answer: { mcqA: '', mcqB: '', mcqC: '', mcqD: '',},
-          timeTosolve: 30,
-          allotedMarks: 1.0,
-          stats:{ correctCount:0, wrongCount:0, skipCount:0},
-          assistance:{},
-        };
-        let hints = [
-          {
-            hint:'This is the default entry to start assistive solving',
-            answer:'not applicable',
-            isCorrectFeedback:'',
-            isWrongFeedback:'',
-            isCorrectStep:'',
-            isWrongStep:''
-          },
-        ];
-      // reset entire form
-      this.setState({showPreview, chapter, question, hints});
-      alert('Question has been created successfully');
-      console.log("Question has been created successfully"); // array of cities objects
-    })
-    .catch((error)=>{
-      alert('Question coulnot be saved. Please check the error: ' + error.toString());
-    });
-
+    if(id){
+      db.collection("questions").doc(id)
+      .set(question)
+      .then(()=>{
+        this.setState({showPreview: false, savedSuccessfully: true});
+        // alert('Question has been updated successfully');
+      })
+      .catch((error)=>{
+        alert('Question coulnot be saved. Please check the error: ' + error.toString());
+      });
+    } else {
+      db.collection("questions")
+      .add(question)
+      .then(() => {
+          let showPreview = false;
+          let savedSuccessfully = true;
+          let question = {
+            gradeId: this.state.question.gradeId,
+            subjectId: this.state.question.subjectId,
+            chapterId: this.state.question.chapterId,
+            difficulty: '',
+            type: 'STANDARD',
+            question:{text:''},
+            answer: { mcqA: '', mcqB: '', mcqC: '', mcqD: '',},
+            timeTosolve: 30,
+            allotedMarks: 1.0,
+            stats:{ correctCount:0, wrongCount:0, skipCount:0},
+            assistance:{},
+          };
+          let hints = [
+            {
+              hint:'This is the default entry to start assistive solving',
+              answer:'not applicable',
+              isCorrectFeedback:'',
+              isWrongFeedback:'',
+              isCorrectStep:'',
+              isWrongStep:''
+            },
+          ];
+        // reset entire form
+        this.setState({showPreview, question, hints, savedSuccessfully});
+        // alert('Question has been created successfully');
+        console.log("Question has been created successfully"); // array of cities objects
+      })
+      .catch((error)=>{
+        alert('Question coulnot be saved. Please check the error: ' + error.toString());
+      });
+    }
   };
   render() {
-    let {question, chapter} = this.state;
+    let {question} = this.state;
     return (
       <div >
         {
-          !this.state.showPreview &&
+          !this.state.showPreview && !this.state.savedSuccessfully &&
           <form  onSubmit={this.togglePreview}>
+            <GridRow>
+              <GridCell span={1}>
+                <NavLink to="/question-list" style={{textDecorationLine: 'none'}}>
+                  <Button type="button" label="back"
+                    onClick={()=>{
+                          let {gradeId,subjectId,chapterId} = this.state.question;
+                          this.setComponentProps({gradeId,subjectId,chapterId});
+                        }
+                      }
+                    />
+                </NavLink>
+              </GridCell>
+            </GridRow>
             <div>
               <br/>
-              <span>This is a simple create question page</span>
+              <span>This is a standard question page</span>
             </div>
             <div style={{padding: '1rem'}}>
               <Grid>
                 <GridRow>
                   <GridCell span={2}>
-                    <Select
+                    <TextField
                       label="Grade"
                       required
+                      disabled
                       // enhanced
-                      options={{'3': 'Grade 3','4': 'Grade 4','5': 'Grade 5','6': 'Grade 6'}}
-                      value={chapter.gradeId}
-                      onChange={(e)=>{
-                        let {chapter} = this.state;
-                        chapter.gradeId = e.target.value;
-                        this.setState({chapter});
-                      }}
+                      // options={{'3': 'Grade 3','4': 'Grade 4','5': 'Grade 5','6': 'Grade 6'}}
+                      value={question.gradeId}
+                      // onChange={(e)=>{
+                      //   let {question} = this.state;
+                      //   question.gradeId = e.target.value;
+                      //   this.setState({question});
+                      // }}
                     />
                   </GridCell>
                   <GridCell span={2}>
-                    <Select
+                    <TextField
                       label="Subject"
                       required
+                      disabled
                       // enhanced
-                      options={{'EVS': 'EVS','EngLang': 'English Language','Maths': 'Mathematics','Science': 'Science'}}
-                      value={chapter.subjectId}
-                      onChange={(e)=>{
-                        let {chapter} = this.state;
-                        chapter.subjectId = e.target.value;
-                        this.setState({chapter});
-                      }}
+                      // options={{'EVS': 'EVS','EngLang': 'English Language','Maths': 'Mathematics','Science': 'Science'}}
+                      value={question.subjectId}
+                      // onChange={(e)=>{
+                      //   let {question} = this.state;
+                      //   question.subjectId = e.target.value;
+                      //   this.setState({question});
+                      // }}
                     />
                   </GridCell>
                   <GridCell span={2}>
-                    <Select
+                    <TextField
                       label="Chapter"
                       required
+                      disabled
                       // enhanced
-                      options={{'1': 'Chapter 1','2': 'Chapter 2','3': 'Chapter 3','4': 'Chapter 4','5': 'Chapter 5'}}
-                      value={chapter.chapterId}
-                      onChange={(e)=>{
-                        let {chapter} = this.state;
-                        chapter.chapterId = e.target.value;
-                        this.setState({chapter});
-                      }}
+                      // options={{'1': 'Chapter 1','2': 'Chapter 2','3': 'Chapter 3','4': 'Chapter 4','5': 'Chapter 5'}}
+                      value={question.chapterId}
+                      // onChange={(e)=>{
+                      //   let {question} = this.state;
+                      //   question.chapterId = e.target.value;
+                      //   this.setState({question});
+                      // }}
                     />
                   </GridCell>
                   <GridCell span={2}>
@@ -233,6 +304,12 @@ class CreateQuestion extends React.Component {
                           this.setState({question});
                         }}
                       />
+                    </GridCell>
+                    <GridCell span={12} style={{textAlign:'left'}}>
+                    {
+                      question.question.text &&
+                      this.textFieldPreview(question.question.text)
+                    }
                     </GridCell>
                   </GridRow>
                   <GridRow><div> <br/></div></GridRow>
@@ -293,7 +370,7 @@ class CreateQuestion extends React.Component {
           </form>
         }
         {
-          this.state.showPreview &&
+          this.state.showPreview && !this.state.savedSuccessfully &&
           <div>
             <Preview
               question={this.state.question}
@@ -305,6 +382,34 @@ class CreateQuestion extends React.Component {
               <div><br/></div>
             </div>
           </div>
+        }
+        {
+          this.state.savedSuccessfully &&
+          <Grid>
+            <GridRow>
+              <GridCell span={12}>
+                <Typography
+                  use="headline6"
+                  // tag="div"
+                  theme="textSecondaryOnBackground"
+                >
+                    Question saved successfully.
+                </Typography>
+              </GridCell>
+              <GridCell span={12}>
+                <NavLink to="/question-list" style={{textDecorationLine: 'none'}}>
+                  <Button type="button" label="back"
+                    onClick={()=>{
+                          let {gradeId,subjectId,chapterId} = this.state.question;
+                          this.setComponentProps({gradeId,subjectId,chapterId});
+                        }
+                      }
+                    />
+                </NavLink>
+              </GridCell>
+              <div><br/></div>
+            </GridRow>
+          </Grid>
         }
       </div>
         );
