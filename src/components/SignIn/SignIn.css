@@ -1,0 +1,15 @@
+@media (max-width: 599px) {
+  .signIn {
+    width: 100%;
+  }
+}
+@media (max-width: 839px) and (min-width: 600px) {
+  .signIn {
+    width: 50%;
+  }
+}
+@media (min-width: 840px) {
+  .signIn {
+    width: 400px;
+  }
+}

@@ -5,9 +5,11 @@ import firebase from '../../provider/database';
 // material UI
 import { List, ListItem, ListItemText, ListItemPrimaryText, ListItemSecondaryText, ListDivider } from '@rmwc/list';
 import { Typography } from '@rmwc/typography';
+import { Button } from '@rmwc/button';
 // Material UI style
 import '@rmwc/list/styles';
 import '@rmwc/typography/styles';
+import '@rmwc/button/styles';
 // Katex css
 import 'katex/dist/katex.min.css'
 
@@ -83,7 +85,7 @@ class Preview extends React.Component {
             // tag="div"
             theme="textSecondaryOnBackground"
           >
-              <Latex>{ this.question.question.text }</Latex>
+              <Latex>{ this.question.question }</Latex>
           </Typography>
         </div>
         <List>
@@ -106,6 +108,18 @@ class Preview extends React.Component {
         {
           this.hints.map((h,i)=>this.generateHintPreview(h,i))
         }
+        <div>
+          <Button type="button" label="1"/>
+          <Button type="button" label="2"/>
+          <Button type="button" label="3"/>
+          <Button type="button" label="4"/>
+          <Button type="button" label="5"/>
+          <Button type="button" label="6"/>
+          <Button type="button" label="7"/>
+          <Button type="button" label="8"/>
+          <Button type="button" label="9"/>
+          <Button type="button" label="10"/>
+        </div>
       </div>
 
 

@@ -7,6 +7,8 @@ import Latex from 'react-latex';
 import firebase from '../../provider/database';
 import QuestionAssistance from './QuestionAssistance';
 import Preview from './Preview';
+import LatexBuilder from '../LatexBuilder/LatexBuilder';
+
 // material UI
 import { Select } from '@rmwc/select';
 import { Grid, GridCell, GridRow } from '@rmwc/grid';
@@ -38,7 +40,7 @@ class CreateQuestion extends React.Component {
         chapterId: '',
         difficulty: '',
         type: 'STANDARD',
-        question:{text:''},
+        question:'',
         answer: { mcqA: '', mcqB: '', mcqC: '', mcqD: '',},
         timeTosolve: 30,
         allotedMarks: 1.0,
@@ -63,6 +65,13 @@ class CreateQuestion extends React.Component {
 
   componentDidMount(){
     this.populateQuestionFields(this.props.question, this.props.id);
+  }
+
+  componentDidUpdate(prevProps){
+    if(this.props.id !== prevProps.id){
+      this.populateQuestionFields(this.props.question, this.props.id);
+    }
+
   }
 
   addHint = e =>{
@@ -95,7 +104,7 @@ class CreateQuestion extends React.Component {
     let {showPreview} = this.state;
     showPreview=!showPreview;
     this.setState({showPreview});
-    console.log("Data of the state", this.state.question.question.text);
+    console.log("Data of the state", this.state.question.question);
   }
   onFieldChange = (e, fieldName, index) =>{
     let {hints} = this.state;
@@ -122,7 +131,7 @@ class CreateQuestion extends React.Component {
   populateQuestionFields(q,id){
     let {question, hints} = this.state;
     Object.assign(question,q);
-    if(q.assistance) {
+    if(q && q.assistance) {
       hints=[];
       Object.keys(question.assistance).forEach((h,i)=>{
                 hints.push({...question.assistance[h]});
@@ -166,7 +175,7 @@ class CreateQuestion extends React.Component {
             chapterId: this.state.question.chapterId,
             difficulty: '',
             type: 'STANDARD',
-            question:{text:''},
+            question:'',
             answer: { mcqA: '', mcqB: '', mcqC: '', mcqD: '',},
             timeTosolve: 30,
             allotedMarks: 1.0,
@@ -194,9 +203,13 @@ class CreateQuestion extends React.Component {
     }
   };
   render() {
-    let {question} = this.state;
+    let {question, hints} = this.state;
     return (
       <div >
+        <Preview
+          question={question}
+          hints={hints}
+        />
         {
           !this.state.showPreview && !this.state.savedSuccessfully &&
           <form  onSubmit={this.togglePreview}>
@@ -297,18 +310,45 @@ class CreateQuestion extends React.Component {
                           validationMsg: true,
                           children: 'The field is required'
                         }}
-                        value={question.question.text}
+                        inputRef={(inputRef)=>{this.tref=inputRef;}}
+                        value={question.question}
                         onChange={(e)=>{
                           let {question} = this.state;
-                          question.question.text = e.target.value;
+                          question.question = e.target.value;
+                          // let tref = {value: e.target.value, start: e.target.selectionStart,end: e.target.selectionEnd};
+                          this.setState({question,
+                            // tref
+                          });
+                        }}
+                      />
+                      <LatexBuilder
+                        parentHandler={(text)=>{
+                          let {question} = this.state;
+                          let tref=this.tref;
+                          console.log("Inside latexbuilder", tref);
+                          if (tref.selectionStart || tref.selectionStart == '0') {
+                              var startPos = tref.selectionStart;
+                              var endPos = tref.selectionEnd;
+                              tref.value = tref.value.substring(0, startPos)
+                                  + text
+                                  + tref.value.substring(endPos, tref.value.length);
+                              tref.selectionStart = startPos + text.length;
+                              tref.selectionEnd = tref.selectionStart;
+                          } else {
+                              tref.value += text;
+                          }
+                          // tref.start = tref.start +  text.length + 1;
+                          // tref.end = tref.start + 1;
+                          question.question = tref.value;
+                          this.tref.focus();
                           this.setState({question});
                         }}
                       />
                     </GridCell>
                     <GridCell span={12} style={{textAlign:'left'}}>
                     {
-                      question.question.text &&
-                      this.textFieldPreview(question.question.text)
+                      question.question &&
+                      this.textFieldPreview(question.question)
                     }
                     </GridCell>
                   </GridRow>

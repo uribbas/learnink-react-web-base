@@ -1,0 +1,8 @@
+@media (max-width: 599px) {
+  .BrainhubCarousel {
+    margin: 0rem -1rem;
+  }
+  .BrainhubCarousel__customArrows {
+    /* margin: -0.25rem; */
+  }
+}

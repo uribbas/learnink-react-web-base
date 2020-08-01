@@ -6,6 +6,7 @@ import Chapter from './Chapter';
 import EditGrade from './EditGrade';
 import EditSubject from './EditSubject';
 import EditChapter from './EditChapter';
+import AppHeader from '../AppHeader/AppHeader';
 
 // material UI
 import { Typography } from '@rmwc/typography';
@@ -29,7 +30,7 @@ class MaintainCatalogue extends React.Component {
       subjectId: '',
       chapterId: '',
     }
-    this.setComponentProps = this.props.setComponentProps;
+    // this.setComponentProps = this.props.setComponentProps;
     this.onSelectGrade = this.onSelectGrade.bind(this);
     this.onSelectSubject = this.onSelectSubject.bind(this);
     this.onSelectChapter = this.onSelectChapter.bind(this);
@@ -76,101 +77,105 @@ class MaintainCatalogue extends React.Component {
 
   render(){
     return(
-      <div style={{ textAlign: 'left', padding: '0.5rem 1rem'}} style={{height: '20% !important'}}>
-        {
-          !this.state.showEdit &&
-          <div>
-            <Typography use="overline">Grades</Typography>
-            <Button label="Add" outlined style={{margin: '0.5rem'}}
-              onClick={()=>this.onShowEdit("grade")}
-            />
-            <Typography use="caption"
-              onClick={()=>this.setState({expandGrades: !this.state.expandGrades})}
-            >
-              {this.state.expandGrades ? "Hide" : "Expand" }
-            </Typography>
-            {
-              this.state.expandGrades &&
-              <Grade
-                onSelectGrade={this.onSelectGrade}
-                onShowEdit={this.onShowEdit}
+      <>
+        {/* <AppHeader {...this.props}/> */}
+        <div style={{ textAlign: 'left', padding: '0.5rem 1rem'}} style={{height: '20% !important'}}>
+          {
+            !this.state.showEdit &&
+            <div>
+              <Typography use="overline">Grades</Typography>
+              <Button label="Add" outlined style={{margin: '0.5rem'}}
+                onClick={()=>this.onShowEdit("grade")}
               />
-            }
-          </div>
-        }
-        {
-          !this.state.showEdit && this.state.gradeId &&
-          <div>
-            <Typography use="overline">{this.state.gradeId ?
-                                        'Subjects for Grade ' + this.state.gradeId
-                                        :
-                                        'Subjects'
-                                      }
-            </Typography>
-            <Button label="Add" outlined style={{margin: '0.5rem'}}
-              onClick={()=>this.onShowEdit("subject")}
+              <Typography use="caption"
+                onClick={()=>this.setState({expandGrades: !this.state.expandGrades})}
+              >
+                {this.state.expandGrades ? "Hide" : "Expand" }
+              </Typography>
+              {
+                this.state.expandGrades &&
+                <Grade
+                  onSelectGrade={this.onSelectGrade}
+                  onShowEdit={this.onShowEdit}
+                />
+              }
+            </div>
+          }
+          {
+            !this.state.showEdit && this.state.gradeId &&
+            <div>
+              <Typography use="overline">{this.state.gradeId ?
+                                          'Subjects for Grade ' + this.state.gradeId
+                                          :
+                                          'Subjects'
+                                        }
+              </Typography>
+              <Button label="Add" outlined style={{margin: '0.5rem'}}
+                onClick={()=>this.onShowEdit("subject")}
+              />
+              <Typography use="caption"
+                onClick={()=>this.setState({expandSubjects: !this.state.expandSubjects})}
+              >
+                {this.state.expandSubjects ? "Hide" : "Expand" }
+              </Typography>
+              {
+                 this.state.expandSubjects &&
+                 <Subject
+                   gradeId={this.state.gradeId}
+                   onSelectSubject={this.onSelectSubject}
+                   onShowEdit={this.onShowEdit}
+                 />
+              }
+            </div>
+          }
+          {
+            !this.state.showEdit && this.state.subjectId &&
+            <div>
+              <Typography use="overline">{this.state.subjectId ?
+                                          'Chapters for grade ' +  this.state.gradeId + ' Subject ' + this.state.subjectId
+                                          :
+                                          'Chapters'
+                                        }
+              </Typography>
+              <Button label="Add" outlined style={{margin: '0.5rem'}}
+                onClick={()=>this.onShowEdit("chapter")}
+              />
+              <Chapter
+                gradeId={this.state.gradeId}
+                subjectId={this.state.subjectId}
+                onSelectChapter={this.onSelectChapter}
+                onShowEdit={this.onShowEdit}
+                setComponentProps={this.setComponentProps}
+              />
+            </div>
+          }
+          {
+            this.state.showEdit == "grade" &&
+            <EditGrade
+              grade={this.state.selectedItem}
+              onShowEdit={this.onShowEdit}
             />
-            <Typography use="caption"
-              onClick={()=>this.setState({expandSubjects: !this.state.expandSubjects})}
-            >
-              {this.state.expandSubjects ? "Hide" : "Expand" }
-            </Typography>
-            {
-               this.state.expandSubjects &&
-               <Subject
-                 gradeId={this.state.gradeId}
-                 onSelectSubject={this.onSelectSubject}
-                 onShowEdit={this.onShowEdit}
-               />
-            }
-          </div>
-        }
-        {
-          !this.state.showEdit && this.state.subjectId &&
-          <div>
-            <Typography use="overline">{this.state.subjectId ?
-                                        'Chapters for grade ' +  this.state.gradeId + ' Subject ' + this.state.subjectId
-                                        :
-                                        'Chapters'
-                                      }
-            </Typography>
-            <Button label="Add" outlined style={{margin: '0.5rem'}}
-              onClick={()=>this.onShowEdit("chapter")}
+          }
+          {
+            this.state.showEdit == "subject" &&
+            <EditSubject
+              gradeId={this.state.gradeId}
+              subject={this.state.selectedItem}
+              onShowEdit={this.onShowEdit}
             />
-            <Chapter
+          }
+          {
+            this.state.showEdit == "chapter" &&
+            <EditChapter
               gradeId={this.state.gradeId}
               subjectId={this.state.subjectId}
-              onSelectChapter={this.onSelectChapter}
+              chapter={this.state.selectedItem}
               onShowEdit={this.onShowEdit}
-              setComponentProps={this.setComponentProps}
             />
-          </div>
-        }
-        {
-          this.state.showEdit == "grade" &&
-          <EditGrade
-            grade={this.state.selectedItem}
-            onShowEdit={this.onShowEdit}
-          />
-        }
-        {
-          this.state.showEdit == "subject" &&
-          <EditSubject
-            gradeId={this.state.gradeId}
-            subject={this.state.selectedItem}
-            onShowEdit={this.onShowEdit}
-          />
-        }
-        {
-          this.state.showEdit == "chapter" &&
-          <EditChapter
-            gradeId={this.state.gradeId}
-            subjectId={this.state.subjectId}
-            chapter={this.state.selectedItem}
-            onShowEdit={this.onShowEdit}
-          />
-        }
-      </div>
+          }
+        </div>
+      </>
+
 
     );
   }

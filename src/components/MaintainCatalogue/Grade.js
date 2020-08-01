@@ -1,5 +1,5 @@
 import React from 'react';
-import firebase from '../../provider/database';
+import firebase, {db} from '../../provider/database';
 
 // material UI
 import { Card, CardMedia, CardPrimaryAction, CardMediaContent, CardActions, CardActionButtons, CardActionButton } from '@rmwc/card';
@@ -17,8 +17,6 @@ import '@rmwc/select/styles';
 import '@rmwc/grid/styles';
 import '@rmwc/textfield/styles';
 import '@rmwc/button/styles';
-
-const db = firebase.firestore();
 
 class Grade extends React.Component {
   constructor(props) {
