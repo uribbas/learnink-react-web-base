@@ -1,6 +1,9 @@
 import React from 'react';
 import firebase, {storage, auth } from '../../provider/database';
-import Latex from 'react-latex';
+import {putStorageItem, removeStorageItem, replaceImageWithUrl} from '../../provider/question';
+import Latex from '../../provider/latex';
+// import Latex from 'react-latex';
+import katex from 'katex';
 
 import LatexBuilder from '../LatexBuilder/LatexBuilder';
 import QuestionAssistanceModerator from '../QuestionAssistance/QuestionAssistanceModerator';
@@ -12,7 +15,7 @@ import Logo from '../../assets/icons/learnink-logo_500.png';
 import Hint from '../../assets/icons/live_help-black-48dp.svg';
 import correctFeeddback from '../../assets/icons/grading-black-48dp.svg';
 import wrongFeeddback from '../../assets/icons/feedback-black-48dp.svg';
-import addQuestion from '../../assets/icons/add-black-48dp.svg';
+import Add from '../../assets/icons/add-black-48dp.svg';
 
 
 // material UI
@@ -29,6 +32,7 @@ import { TabBar, Tab } from '@rmwc/tabs';
 import {Icon} from '@rmwc/icon';
 import { IconButton } from '@rmwc/icon-button';
 import {List, ListDivider} from '@rmwc/list';
+import { Checkbox } from '@rmwc/checkbox';
 
 // material UI style
 import '@rmwc/card/styles';
@@ -43,6 +47,7 @@ import '@rmwc/tabs/styles';
 import '@rmwc/icon/styles';
 import '@rmwc/icon-button/styles';
 import '@rmwc/list/styles';
+import '@rmwc/checkbox/styles';
 // Katex css
 import 'katex/dist/katex.min.css'
 
@@ -65,6 +70,7 @@ class ViewStandardQuestion extends React.Component {
     this.onClickClose = this.props.onClickClose;
     this.onClickCancel = this.props.onClickCancel;
     this.addQuestion = this.addQuestion.bind(this);
+    // this.replaceImageWithUrl = this.replaceImageWithUrl.bind(this);
   }
   componentDidMount() {
     // Typical usage (don't forget to compare props):
@@ -83,6 +89,24 @@ class ViewStandardQuestion extends React.Component {
       this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {}});
     }
   }
+
+  // replaceImageWithUrl(text){
+  //   const {question} = this.state;
+  //   let preview = text;
+  //   question.photos.forEach(p=>{
+  //     // let newImgTxt = p.url ? ("\\<img src='" + (p.url) + "'") : ("<img src='" + p.preview + "'");
+  //     let newImgTxt = p.url ? p.url :  p.preview;
+  //     preview = preview.replace(new RegExp(p.name,'g'),newImgTxt );
+  //     // console.log("Preview process ", p.name, newImgTxt, preview, preview=="<"+p.name+"\\/>");
+  //   })
+  //   // preview = "\\includegraphics[height=5em, alt=KA logo]{https://firebasestorage.googleapis.com/v0/b/deb-learnink-dev.appspot.com/o/images%2Fgrade%2F6%2FMaths%2Fdatarep%2F6_Maths_datarep_easy_1%2FIMAGE1596508920254.png?alt=media&token=3045c034-7fb5-4365-a7f7-c11c888e44ba}";
+  //   // let p = katex.renderToString(preview ? preview : '', {
+  //   //   "displayMode":false,"leqno":false,"fleqn":false,"throwOnError":false,"errorColor":"#cc0000",
+  //   //   "strict":"warn","output":"htmlAndMathml","trust":true,"macros":{"\\f":"f(#1)"}
+  //   // });
+  //   // console.log("p is ", p);
+  //   return preview;
+  // }
 
   removeStep = (e, index) =>{
     // TBA
@@ -124,6 +148,34 @@ class ViewStandardQuestion extends React.Component {
     let {question} = this.state;
     this.setState({loader: true});
     // create the question
+    let newPhotos = question.photos.filter(p=>p.status=='NEW' && !p.url);
+    await Promise.all(newPhotos.map(np=>{
+                        // check whether photo is changed
+                        let fileExtn = np.raw.name.split('.')[1];
+                        // console.log("Raw file name", raw.name, fileExtn, `/images/grade/${grade.gradeId}/gradeImage.${fileExtn}`);
+                        let path = `/images/grade/${question.gradeId}/${question.subjectId}/${question.chapterId}/${question.docId}/${np.name}.${fileExtn}`;
+                        return putStorageItem(path,np.raw, np);
+                  }));
+    console.log("new upload photos", newPhotos);
+    newPhotos.forEach(np=>{
+      let idx =  question.photos.findIndex(ph=>ph.name==np.name);
+      let photo = question.photos[idx];
+      delete photo.raw;
+      delete photo.preview;
+      photo.url = np.url;
+      photo.status = "EXISTING";
+    });
+    let deletePhotos = question.photos.filter(p=>p.status=='DELETE' && p.url);
+
+    await Promise.all(deletePhotos.map(np=>{
+                        return removeStorageItem(np.url);
+                  }));
+    deletePhotos.forEach(np=>{
+        let idx =  question.photos.findIndex(ph=>ph.name==np.name);
+        question.photos.splice(idx,1);
+    })
+    console.log("Deleted photos", deletePhotos);
+
     if(question.docId){
       await db.collection("questions").doc(question.docId)
       .set(question)
@@ -154,10 +206,10 @@ class ViewStandardQuestion extends React.Component {
                 Object.assign(question,{'questionSequenceId': qsequence});
                 transaction.set(qRef,question);
                 transaction.update(sfDocRef, { [question.difficulty]: qsequence });
-                // return true;
+                return question;
                 console.log("transaction for add question" );
             });
-        }).then(()=>{
+        }).then((question)=>{
             console.log("questionSequenceId increased" );
             this.setState({loader: false});
             this.onClickClose();
@@ -261,7 +313,7 @@ class ViewStandardQuestion extends React.Component {
             <GridRow>
               <GridCell phone={1} tablet={2} desktop={1}>
                 <Typography use="headline6" tap="span" style={{padding: '1rem'}}>
-                  {question.questionSequenceId ? question.questionSequenceId : <Button icon={addQuestion} disabled style={{marginLeft: '-1rem'}}/>}
+                  {question.questionSequenceId ? question.questionSequenceId : <Button icon={Add} disabled style={{marginLeft: '-1rem'}}/>}
                 </Typography>
               </GridCell>
               <GridCell phone={4} tablet={6} desktop={6} style={{marginTop: '1rem', padding: '0.0rem', background: '#f5f5f56e' }}>
@@ -296,7 +348,17 @@ class ViewStandardQuestion extends React.Component {
                     {
                       focusField == 'tref' &&
                       <LatexBuilder
+                        question={question}
+                        replaceTextHandler={(oldText,newText, question)=>{
+                          if(!question){
+                            let {question} = this.state;
+                          }
+                          question.question = question.question.replace(new RegExp(oldText,'g'),newText );
+                          // this.tref.focus();
+                          this.setState({question});
+                        }}
                         parentHandler={(text)=>{
+                          // console.log("Called parent handler", text);
                           let {question} = this.state;
                           let newQuestion = this.latexbuilderCallback(text, this.tref);
                           question.question = newQuestion;
@@ -305,7 +367,23 @@ class ViewStandardQuestion extends React.Component {
                         }}
                       />
                     }
-                  <Latex >{question.question}</Latex>
+                  <Latex trust={true}>{replaceImageWithUrl(question.question, question.photos)}</Latex>
+                  {/* <span id="katexspan">
+                    {
+                      focusField == 'tref' &&
+                      katex.render(this.replaceImageWithUrl(question.question),
+                                  document.getElementById('katexspan'),
+                                  {trust: true, throwOnError: false})
+                    }
+                  </span>
+                  <span id="katexspanString">
+                    {
+                      focusField == 'tref' &&
+                      <span dangerouslySetInnerHTML={{__html: katex.renderToString(this.replaceImageWithUrl(question.question),
+                                  {trust: true, throwOnError: false})}} />
+
+                    }
+                  </span> */}
               </GridCell>
               <GridCell phone={4} tablet={8} desktop={5} style={{paddingTop: '0.4rem', paddingBottom: '0.4rem', paddingRight: '0.5rem'}}>
                 <TabBar
@@ -349,6 +427,17 @@ class ViewStandardQuestion extends React.Component {
                     {
                       focusField == 'mcqtref' &&
                       <LatexBuilder
+                        question={question}
+                        replaceTextHandler={(oldText,newText, question)=>{
+                          if(!question){
+                            let {question} = this.state;
+                          }
+                          let answer = question.answer['mcq' + String.fromCharCode(65 + this.state.activeTab)];
+                          answer = answer.replace(new RegExp(oldText,'g'),newText );
+                          question.answer['mcq' + String.fromCharCode(65 + this.state.activeTab)] = answer;
+                          // this.tref.focus();
+                          this.setState({question});
+                        }}
                         parentHandler={(text)=>{
                           let {question} = this.state;
                           let answer = this.latexbuilderCallback(text, this.mcqtref);
@@ -358,8 +447,55 @@ class ViewStandardQuestion extends React.Component {
                         }}
                       />
                     }
-                  <Latex>{question.answer['mcq' + String.fromCharCode(65 + this.state.activeTab)]}</Latex>
+                  <Latex>{replaceImageWithUrl(question.answer['mcq' + String.fromCharCode(65 + this.state.activeTab)],
+                                              question.photos)}</Latex>
                 </Typography>
+              </GridCell>
+              <GridCell phone={4} tablet={8} desktop={1}>
+              </GridCell>
+              <GridCell phone={2} tablet={2} desktop={2} style={{margin: '0rem 0.5rem', padding: '0rem',  }}>
+                <TextField
+                    // outlined
+                    // fullwidth
+                    required
+                    label="Marks..."
+                    maxLength={2}
+                    characterCount
+                    value={question.allotedMarks}
+                    onChange={(e)=>{
+                      let {question} = this.state;
+                      question.allotedMarks = e.target.value;
+                      this.setState({question});
+                    }}
+                  />
+              </GridCell>
+              <GridCell phone={2} tablet={2} desktop={2} style={{margin: '0rem 0.5rem', padding: '0rem',  }}>
+                <TextField
+                    // outlined
+                    // fullwidth
+                    required
+                    label="Time(sec)..."
+                    maxLength={2}
+                    characterCount
+                    value={question.timeToSolve}
+                    onChange={(e)=>{
+                      let {question} = this.state;
+                      question.timeToSolve = e.target.value;
+                      this.setState({question});
+                    }}
+                  />
+              </GridCell>
+              <GridCell phone={4} tablet={4} desktop={6} style={{margin: '0rem 0.5rem', padding:'0rem'}}>
+                <Checkbox
+                  label="Can be a fill in the blanks question"
+                  checked = {question.isFillInTheBlanks}
+                  onChange={(e) => {
+                                let {question} = this.state;
+                                question.isFillInTheBlanks = !!e.currentTarget.checked;
+                                this.setState({question});
+                              }
+                            }
+                />
               </GridCell>
             </GridRow>
             <QuestionAssistanceModerator

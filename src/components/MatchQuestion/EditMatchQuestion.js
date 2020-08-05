@@ -1,6 +1,8 @@
 import React from 'react';
 import firebase, {storage, auth } from '../../provider/database';
-import Latex from 'react-latex';
+import {putStorageItem, removeStorageItem, replaceImageWithUrl} from '../../provider/question';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 import LatexBuilder from '../LatexBuilder/LatexBuilder';
 import QuestionAssistanceModerator from '../QuestionAssistance/QuestionAssistanceModerator';
@@ -12,7 +14,7 @@ import Logo from '../../assets/icons/learnink-logo_500.png';
 import Hint from '../../assets/icons/live_help-black-48dp.svg';
 import correctFeeddback from '../../assets/icons/grading-black-48dp.svg';
 import wrongFeeddback from '../../assets/icons/feedback-black-48dp.svg';
-import addQuestion from '../../assets/icons/add-black-48dp.svg';
+import Add from '../../assets/icons/add-black-48dp.svg';
 import Delete from '../../assets/icons/remove-black-48dp.svg';
 
 
@@ -30,6 +32,7 @@ import { TabBar, Tab } from '@rmwc/tabs';
 import {Icon} from '@rmwc/icon';
 import { IconButton } from '@rmwc/icon-button';
 import {List, ListDivider} from '@rmwc/list';
+import { Checkbox } from '@rmwc/checkbox';
 
 // material UI style
 import '@rmwc/card/styles';
@@ -44,6 +47,7 @@ import '@rmwc/tabs/styles';
 import '@rmwc/icon/styles';
 import '@rmwc/icon-button/styles';
 import '@rmwc/list/styles';
+import '@rmwc/checkbox/styles';
 // Katex css
 import 'katex/dist/katex.min.css'
 
@@ -66,6 +70,7 @@ class EditMatchQuestion extends React.Component {
     this.onClickClose = this.props.onClickClose;
     this.onClickCancel = this.props.onClickCancel;
     this.addQuestion = this.addQuestion.bind(this);
+    // this.replaceImageWithUrl = this.replaceImageWithUrl.bind(this);
   }
   componentDidMount() {
     // Typical usage (don't forget to compare props):
@@ -84,6 +89,17 @@ class EditMatchQuestion extends React.Component {
       this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {}});
     }
   }
+
+  // replaceImageWithUrl(text){
+  //   const {question} = this.state;
+  //   let preview = text;
+  //   question.photos.forEach(p=>{
+  //     let newImgTxt = p.url ? ("img src='" + p.url + "'") : ("img src='" + p.preview + "'");
+  //     preview = preview.replace(new RegExp(p.name,'g'),newImgTxt );
+  //     // console.log("Preview process ", p.name, newImgTxt, preview, preview=="<"+p.name+"\\/>");
+  //   })
+  //   return preview;
+  // }
 
   removeMatch = (e, index) =>{
     // TBA
@@ -134,6 +150,34 @@ class EditMatchQuestion extends React.Component {
     let {question} = this.state;
     this.setState({loader: true});
     // create the question
+    let newPhotos = question.photos.filter(p=>p.status=='NEW' && !p.url);
+    await Promise.all(newPhotos.map(np=>{
+                        // check whether photo is changed
+                        let fileExtn = np.raw.name.split('.')[1];
+                        // console.log("Raw file name", raw.name, fileExtn, `/images/grade/${grade.gradeId}/gradeImage.${fileExtn}`);
+                        let path = `/images/grade/${question.gradeId}/${question.subjectId}/${question.chapterId}/${question.docId}/${np.name}.${fileExtn}`;
+                        return putStorageItem(path,np.raw, np);
+                  }));
+    console.log("new upload photos", newPhotos);
+    newPhotos.forEach(np=>{
+      let idx =  question.photos.findIndex(ph=>ph.name==np.name);
+      let photo = question.photos[idx];
+      delete photo.raw;
+      delete photo.preview;
+      photo.url = np.url;
+      photo.status = "EXISTING";
+    });
+    let deletePhotos = question.photos.filter(p=>p.status=='DELETE' && p.url);
+
+    await Promise.all(deletePhotos.map(np=>{
+                        return removeStorageItem(np.url);
+                  }));
+    deletePhotos.forEach(np=>{
+        let idx =  question.photos.findIndex(ph=>ph.name==np.name);
+        question.photos.splice(idx,1);
+    })
+    console.log("Deleted photos", deletePhotos);
+
     if(question.docId){
       await db.collection("questions").doc(question.docId)
       .set(question)
@@ -224,7 +268,7 @@ class EditMatchQuestion extends React.Component {
             <GridRow>
               <GridCell phone={1} tablet={2} desktop={1}>
                 <Typography use="headline6" tap="span" style={{padding: '1rem'}}>
-                  {question.questionSequenceId ? question.questionSequenceId : <Button icon={addQuestion} disabled style={{marginLeft: '-1rem'}}/>}
+                  {question.questionSequenceId ? question.questionSequenceId : <Button icon={Add} disabled style={{marginLeft: '-1rem'}}/>}
                 </Typography>
               </GridCell>
               <GridCell phone={4} tablet={6} desktop={6} style={{marginTop: '1rem', padding: '0.0rem', background: '#f5f5f56e' }}>
@@ -259,6 +303,15 @@ class EditMatchQuestion extends React.Component {
                     {
                       focusField == 'tref' &&
                       <LatexBuilder
+                        question={question}
+                        replaceTextHandler={(oldText,newText, question)=>{
+                          if(!question){
+                            let {question} = this.state;
+                          }
+                          question.question = question.question.replace(new RegExp(oldText,'g'),newText );
+                          // this.tref.focus();
+                          this.setState({question});
+                        }}
                         parentHandler={(text)=>{
                           let {question} = this.state;
                           let newQuestion = this.latexbuilderCallback(text, this.tref);
@@ -268,7 +321,7 @@ class EditMatchQuestion extends React.Component {
                         }}
                       />
                     }
-                  <Latex >{question.question}</Latex>
+                  <Latex trust={true} >{replaceImageWithUrl(question.question, question.photos)}</Latex>
               </GridCell>
               <GridCell phone={4} tablet={8} desktop={5} style={{paddingTop: '0.4rem', paddingBottom: '0.4rem', paddingRight: '0.5rem'}}>
                 <TabBar
@@ -317,6 +370,17 @@ class EditMatchQuestion extends React.Component {
                     {
                       focusField == 'matchTextRef' &&
                       <LatexBuilder
+                        question={question}
+                        replaceTextHandler={(oldText,newText, question)=>{
+                          if(!question){
+                            let {question} = this.state;
+                          }
+                          let matchText = question.answer[this.state.activeTab].matchText;
+                          matchText = matchText.replace(new RegExp(oldText,'g'),newText );
+                          question.answer[this.state.activeTab].matchText = matchText;
+                          // this.tref.focus();
+                          this.setState({question});
+                        }}
                         parentHandler={(text)=>{
                           let {question} = this.state;
                           let answer = this.latexbuilderCallback(text, this.matchTextRef);
@@ -326,7 +390,7 @@ class EditMatchQuestion extends React.Component {
                         }}
                       />
                     }
-                  <Latex>{question.answer[this.state.activeTab].matchText}</Latex>
+                  <Latex trust={true} >{replaceImageWithUrl(question.answer[this.state.activeTab].matchText, question.photos)}</Latex>
                 </Typography>
                 <Typography use="caption" tag="div" style={{marginTop: '0.5rem', padding: '1rem 1rem', background: '#f5f5f56e' }}>
                   <TextField
@@ -360,6 +424,17 @@ class EditMatchQuestion extends React.Component {
                     {
                       focusField == 'answerTextRef' &&
                       <LatexBuilder
+                        question={question}
+                        replaceTextHandler={(oldText,newText, question)=>{
+                          if(!question){
+                            let {question} = this.state;
+                          }
+                          let answer = question.answer[this.state.activeTab].answerText;
+                          answer = answer.replace(new RegExp(oldText,'g'),newText );
+                          question.answer[this.state.activeTab].answerText = answer;
+                          // this.tref.focus();
+                          this.setState({question});
+                        }}
                         parentHandler={(text)=>{
                           let {question} = this.state;
                           let answer = this.latexbuilderCallback(text, this.answerTextRef);
@@ -369,13 +444,13 @@ class EditMatchQuestion extends React.Component {
                         }}
                       />
                     }
-                  <Latex>{question.answer[this.state.activeTab].answerText}</Latex>
+                  <Latex trust={true} >{replaceImageWithUrl(question.answer[this.state.activeTab].answerText, question.photos)}</Latex>
                 </Typography>
                 <CardActions>
                   <CardActionButtons>
 
                     <CardActionButton type="button"
-                      icon={addQuestion}
+                      icon={Add}
                       onClick={()=>{
                         let {question} = this.state;
                         question.answer.push({matchText:'',answerText:'',});
@@ -388,6 +463,52 @@ class EditMatchQuestion extends React.Component {
                         onClick={(e)=>this.removeMatch(e,this.state.activeTab)}
                       >Match</CardActionButton>
                   </CardActions>
+              </GridCell>
+              <GridCell phone={4} tablet={8} desktop={1}>
+              </GridCell>
+              <GridCell phone={2} tablet={2} desktop={2} style={{margin: '0rem 0.5rem', padding: '0rem',  }}>
+                <TextField
+                    // outlined
+                    // fullwidth
+                    required
+                    label="Marks..."
+                    maxLength={2}
+                    characterCount
+                    value={question.allotedMarks}
+                    onChange={(e)=>{
+                      let {question} = this.state;
+                      question.allotedMarks = e.target.value;
+                      this.setState({question});
+                    }}
+                  />
+              </GridCell>
+              <GridCell phone={2} tablet={2} desktop={2} style={{margin: '0rem 0.5rem', padding: '0rem',  }}>
+                <TextField
+                    // outlined
+                    // fullwidth
+                    required
+                    label="Time(sec)..."
+                    maxLength={2}
+                    characterCount
+                    value={question.timeToSolve}
+                    onChange={(e)=>{
+                      let {question} = this.state;
+                      question.timeToSolve = e.target.value;
+                      this.setState({question});
+                    }}
+                  />
+              </GridCell>
+              <GridCell phone={4} tablet={4} desktop={6} style={{margin: '0rem 0.5rem', padding:'0rem'}}>
+                <Checkbox
+                  label="Can be a fill in the blanks question"
+                  checked = {question.isFillInTheBlanks}
+                  onChange={(e) => {
+                                let {question} = this.state;
+                                question.isFillInTheBlanks = !!e.currentTarget.checked;
+                                this.setState({question});
+                              }
+                            }
+                />
               </GridCell>
             </GridRow>
             <QuestionAssistanceModerator

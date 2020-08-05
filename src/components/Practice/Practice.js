@@ -1,5 +1,6 @@
 import React from 'react';
 import firebase, {db} from '../../provider/database';
+import { getqDData } from '../../provider/question';
 import Categories from '../Categories/Categories';
 import RadioFilter from '../RadioFilter/RadioFilter';
 import QuestionList from './QuestionList';
@@ -127,13 +128,23 @@ class Practice extends React.Component {
     });
   }
 
-  onSelectChapter(selectedChapter){
+  async onSelectChapter(selectedChapter){
     const { userAuth, userProfile, aphRef} = this.props;
     if(!userProfile){
-      this.setState({selectedChapter: null});
+      this.setState({selectedChapter: null,showChapterFilter: false, addQuestion: false,});
       aphRef.handleOpenSignIn(true);
     } else {
+      let {qdData} = this.state;
+      if(!qdData || selectedChapter.gradeId != qdData.gradeId ||
+         selectedChapter.subjectId != qdData.subjectId ||
+         selectedChapter.chapterId != qdData.chapterId
+       ){
+         qdData = await getqDData(selectedChapter);
+       }
       this.setState({
+          qdData: qdData,
+          showChapterFilter: false,
+          addQuestion: false,
           selectedChapter: {
             gradeId: selectedChapter.gradeId, subjectId: selectedChapter.subjectId,
             chapterId: selectedChapter.chapterId,
@@ -235,12 +246,14 @@ class Practice extends React.Component {
                     selectedItem={selectedChapter}
                     open={showChapterFilter}
                     onChange={(selectedChapter)=>{
-                          if(!userProfile){
-                            this.setState({showChapterFilter: false, addQuestion: false})
-                            aphRef.handleOpenSignIn(true);
-                          } else {
-                            this.setState({selectedChapter, showChapterFilter: false, addQuestion: false})
-                          }
+                          // if(!userProfile){
+                          //   this.setState({showChapterFilter: false, addQuestion: false})
+                          //   aphRef.handleOpenSignIn(true);
+                          // } else {
+                          //   this.setState({selectedChapter, showChapterFilter: false, addQuestion: false})
+                          // }
+                          // call function with origin as filter
+                          this.onSelectChapter(selectedChapter.chapter);
                         }
                       }
                     onOpen={()=>this.setState({showChapterFilter: true})}
@@ -266,6 +279,7 @@ class Practice extends React.Component {
                       chapter={selectedChapter.chapter}
                       selectedQType={selectedQType}
                       selectedDifficulty={selectedDifficulty}
+                      qdData={qdData}
                       onClickClose={()=>{
                         this.setState({addQuestion: null});
                         console.log("click close of questions add question");

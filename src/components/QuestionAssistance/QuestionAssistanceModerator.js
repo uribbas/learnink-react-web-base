@@ -1,6 +1,8 @@
 import React from 'react';
 import firebase, {storage, auth } from '../../provider/database';
-import Latex from 'react-latex';
+import {replaceImageWithUrl} from '../../provider/question';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 import LatexBuilder from '../LatexBuilder/LatexBuilder';
 
@@ -65,6 +67,7 @@ class QuestionAssistanceModerator extends React.Component {
     this.onClickClose = this.props.onClickClose;
     this.onClickCancel = this.props.onClickCancel;
     // this.addQuestion = this.addQuestion.bind(this);
+    // this.replaceImageWithUrl = this.replaceImageWithUrl.bind(this);
   }
   componentDidMount() {
     // Typical usage (don't forget to compare props):
@@ -83,6 +86,17 @@ class QuestionAssistanceModerator extends React.Component {
       this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {}});
     }
   }
+
+  // replaceImageWithUrl(text){
+  //   const {question} = this.state;
+  //   let preview = text;
+  //   question.photos.forEach(p=>{
+  //     let newImgTxt = p.url ? ("img src='" + p.url + "'") : ("img src='" + p.preview + "'");
+  //     preview = preview.replace(new RegExp(p.name,'g'),newImgTxt );
+  //     // console.log("Preview process ", p.name, newImgTxt, preview, preview=="<"+p.name+"\\/>");
+  //   })
+  //   return preview;
+  // }
 
   removeStep = (e, index) =>{
     // TBA
@@ -203,6 +217,17 @@ class QuestionAssistanceModerator extends React.Component {
                       {
                         focusField == 'hinttref' &&
                         <LatexBuilder
+                          question={question}
+                          replaceTextHandler={(oldText,newText, question)=>{
+                            if(!question){
+                              let {question} = this.state;
+                            }
+                            let hint = question.assistance[this.state.activeAssistTab].hint;
+                            hint = hint.replace(new RegExp(oldText,'g'),newText );
+                            question.assistance[this.state.activeAssistTab].hint = hint;
+                            // this.tref.focus();
+                            this.setState({question});
+                          }}
                           parentHandler={(text)=>{
                             let {question} = this.state;
                             let hint = this.latexbuilderCallback(text, this.hinttref);
@@ -212,7 +237,8 @@ class QuestionAssistanceModerator extends React.Component {
                           }}
                         />
                       }
-                    <Latex>{question.assistance[this.state.activeAssistTab].hint}</Latex>
+                    <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].hint,
+                                                              question.photos)}</Latex>
                   </Typography>
                   <Typography use="caption" tag="div" style={{marginTop: '0.6rem', padding: '0.2rem 1rem', background: '#f5f5f56e' }}>
                     <TextField
@@ -247,6 +273,17 @@ class QuestionAssistanceModerator extends React.Component {
                       {
                         focusField == 'hintanstref' &&
                         <LatexBuilder
+                          question={question}
+                          replaceTextHandler={(oldText,newText, question)=>{
+                            if(!question){
+                              let {question} = this.state;
+                            }
+                            let hint = question.assistance[this.state.activeAssistTab].hint;
+                            hint = hint.replace(new RegExp(oldText,'g'),newText );
+                            question.assistance[this.state.activeAssistTab].hint = hint;
+                            // this.tref.focus();
+                            this.setState({question});
+                          }}
                           parentHandler={(text)=>{
                             let {question} = this.state;
                             let ans = this.latexbuilderCallback(text, this.hintanstref);
@@ -256,7 +293,8 @@ class QuestionAssistanceModerator extends React.Component {
                           }}
                         />
                       }
-                    <Latex>{question.assistance[this.state.activeAssistTab].answer}</Latex>
+                    <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].answer,
+                                                              question.photos)}</Latex>
                   </Typography>
                 </GridCell>
                 <GridCell phone={1} tablet={1} desktop={1}>
@@ -305,6 +343,17 @@ class QuestionAssistanceModerator extends React.Component {
                       {
                         focusField == 'correctFeedbacktref' &&
                         <LatexBuilder
+                          question={question}
+                          replaceTextHandler={(oldText,newText, question)=>{
+                            if(!question){
+                              let {question} = this.state;
+                            }
+                            let answer = question.assistance[this.state.activeAssistTab].isCorrectFeedback;
+                            answer = answer.replace(new RegExp(oldText,'g'),newText );
+                            question.assistance[this.state.activeAssistTab].isCorrectFeedback = answer;
+                            // this.tref.focus();
+                            this.setState({question});
+                          }}
                           parentHandler={(text)=>{
                             let {question} = this.state;
                             let feedback = this.latexbuilderCallback(text, this.correctFeedbacktref);
@@ -314,7 +363,8 @@ class QuestionAssistanceModerator extends React.Component {
                           }}
                         />
                       }
-                    <Latex>{question.assistance[this.state.activeAssistTab].isCorrectFeedback}</Latex>
+                    <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].isCorrectFeedback,
+                                                              question.photos)}</Latex>
                   </Typography>
                 </GridCell>
                 <GridCell phone={1} tablet={1} desktop={1}>
@@ -363,6 +413,17 @@ class QuestionAssistanceModerator extends React.Component {
                       {
                         focusField == 'wrongFeedbacktref' &&
                         <LatexBuilder
+                          question={question}
+                          replaceTextHandler={(oldText,newText, question)=>{
+                            if(!question){
+                              let {question} = this.state;
+                            }
+                            let answer = question.assistance[this.state.activeAssistTab].isWrongFeedback;
+                            answer = answer.replace(new RegExp(oldText,'g'),newText );
+                            question.assistance[this.state.activeAssistTab].isWrongFeedback = answer;
+                            // this.tref.focus();
+                            this.setState({question});
+                          }}
                           parentHandler={(text)=>{
                             let {question} = this.state;
                             let feedback = this.latexbuilderCallback(text, this.wrongFeedbacktref);
@@ -372,7 +433,8 @@ class QuestionAssistanceModerator extends React.Component {
                           }}
                         />
                       }
-                    <Latex>{question.assistance[this.state.activeAssistTab].isWrongFeedback}</Latex>
+                    <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].isWrongFeedback,
+                                                              question.photos)}</Latex>
                   </Typography>
                 </GridCell>
               </GridRow>

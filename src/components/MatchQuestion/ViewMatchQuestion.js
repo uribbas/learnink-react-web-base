@@ -1,6 +1,8 @@
 import React from 'react';
 import firebase, {storage, auth } from '../../provider/database';
-import Latex from 'react-latex';
+import {replaceImageWithUrl} from '../../provider/question';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 import Upload from '../../assets/icons/publish-black-48dp.svg';
 import closeIcon from '../../assets/icons/close-black-48dp.svg';
@@ -83,7 +85,7 @@ class ViewStandardQuestion extends React.Component {
               </GridCell>
               <GridCell phone={3} tablet={6} desktop={6} style={{paddingTop: '0.4rem', paddingBottom: '0.4rem', paddingRight: '0.5rem'}}>
                 <Typography use="body2" tag="span">
-                  <Latex>{question.question}</Latex>
+                  <Latex trust={true} >{replaceImageWithUrl(question.question,question.photos)}</Latex>
                 </Typography>
               </GridCell>
               <GridCell phone={4} tablet={8} desktop={5} style={{paddingTop: '0.4rem', paddingBottom: '0.4rem', paddingRight: '0.5rem'}}>
@@ -103,10 +105,12 @@ class ViewStandardQuestion extends React.Component {
                     }
                 </TabBar>
                 <Typography use="caption" tag="div" style={{marginTop: '0.5rem',padding: '0.2rem 1rem', background: '#f5f5f56e'}}>
-                  <Latex>{question.answer[this.state.activeTab].matchText}</Latex>
+                  <Latex trust={true} >{replaceImageWithUrl(question.answer[this.state.activeTab].matchText,
+                                                            question.photos)}</Latex>
                 </Typography>
                 <Typography use="caption" tag="div" style={{marginTop: '0.5rem', padding: '0.2rem 1rem', background: '#f5f5f56e'}}>
-                  <Latex>{question.answer[this.state.activeTab].answerText}</Latex>
+                  <Latex trust={true} >{replaceImageWithUrl(question.answer[this.state.activeTab].answerText,
+                                                            question.photos)}</Latex>
                 </Typography>
               </GridCell>
               <GridCell phone={4} tablet={8} desktop={12}
@@ -128,10 +132,12 @@ class ViewStandardQuestion extends React.Component {
                   </GridCell>
                   <GridCell phone={3} tablet={7} desktop={11}>
                     <Typography use="caption" tag="p" style={{padding: '0.2rem 1rem', background: '#f5f5f56e'}}>
-                      <Latex>{question.assistance[this.state.activeAssistTab].hint}</Latex>
+                      <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].hint,
+                                                                question.photos)}</Latex>
                     </Typography>
                     <Typography use="caption" tag="p" style={{padding: '0.2rem 1rem', background: '#f5f5f56e'}}>
-                      <Latex>{"Answer: " + question.assistance[this.state.activeAssistTab].answer}</Latex>
+                      <Latex trust={true} >{"Answer: " + replaceImageWithUrl(question.assistance[this.state.activeAssistTab].answer,
+                                                                            question.photos)}</Latex>
                     </Typography>
                   </GridCell>
                   <GridCell phone={1} tablet={1} desktop={1}>
@@ -142,7 +148,8 @@ class ViewStandardQuestion extends React.Component {
                   </GridCell>
                   <GridCell phone={3} tablet={7} desktop={11}>
                     <Typography use="caption" tag="div" style={{padding: '0.2rem 1rem', background: '#f5f5f56e'}}>
-                      <Latex>{question.assistance[this.state.activeAssistTab].isCorrectFeedback}</Latex>
+                      <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].isCorrectFeedback,
+                                                                question.photos)}</Latex>
                     </Typography>
                   </GridCell>
                   <GridCell phone={1} tablet={1} desktop={1}>
@@ -154,7 +161,8 @@ class ViewStandardQuestion extends React.Component {
                   </GridCell>
                   <GridCell phone={3} tablet={7} desktop={11}>
                     <Typography use="caption" tag="div" style={{padding: '0.2rem 1rem', background: '#f5f5f56e'}}>
-                      <Latex>{question.assistance[this.state.activeAssistTab].isWrongFeedback}</Latex>
+                      <Latex trust={true} >{replaceImageWithUrl(question.assistance[this.state.activeAssistTab].isWrongFeedback,
+                                                                question.photos)}</Latex>
                     </Typography>
                   </GridCell>
                 </GridRow>

@@ -1,10 +1,12 @@
 import React from 'react';
 import firebase, {db} from '../../provider/database';
+import {replaceImageWithUrl} from '../../provider/question';
 import Categories from '../Categories/Categories';
 import StandardQuestion from '../StandardQuestion/StandardQuestion';
 import MatchQuestion from '../MatchQuestion/MatchQuestion';
 
-import Latex from 'react-latex';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 // material UI
 import Left from '../../assets/icons/chevron_left-black-48dp.svg';
@@ -90,7 +92,9 @@ class QuestionList extends React.Component {
     .onSnapshot((querySnapshot)=>{
         let questions = [];
         querySnapshot.forEach((doc)=>{
-            questions.push({...doc.data(), docId: doc.id});
+            let data = doc.data();
+            if(!data.photos){data.photos=[]}
+            questions.push({...data, docId: doc.id});
         });
         console.log("questions fetched: ", questions);
         this.setState({questions,showCardAction, editItem: null, loader: false});
@@ -128,7 +132,7 @@ class QuestionList extends React.Component {
                         </GridCell>
                         <GridCell phone={3} tablet={6} desktop={10} style={{paddingTop: '0.4rem', paddingBottom: '0.4rem', paddingRight: '0.5rem'}}>
                           <Typography use="body2" tag="span">
-                            <Latex>{q.question}</Latex>
+                            <Latex trust={true} >{replaceImageWithUrl(q.question,q.photos)}</Latex>
                           </Typography>
                         </GridCell>
                         <GridCell phone={1} tablet={2} desktop={2} style={{padding: '0 0 1rem'}}>

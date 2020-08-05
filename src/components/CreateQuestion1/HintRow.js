@@ -1,5 +1,6 @@
 import React from 'react';
-import Latex from 'react-latex';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 import firebase from '../../provider/database';
 // material UI

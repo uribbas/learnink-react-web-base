@@ -139,6 +139,7 @@ class Question extends React.Component {
                 { mcqA: '', mcqB: '', mcqC: '', mcqD: '',}
                 :
                 [{matchText:'',answerText:'',},{matchText:'',answerText:'',}],
+        isFillInTheBlanks: false,
         timeTosolve: 30,
         allotedMarks: 1.0,
         stats:{ correctCount:0, wrongCount:0, skipCount:0},
@@ -151,7 +152,8 @@ class Question extends React.Component {
             isCorrectStep:-1,
             isWrongStep:-1
           }
-        }
+        },
+        photos:[],
       };
     this.setState({loader: true});
     if(!qdData || selectedChapter.gradeId != qdData.gradeId ||

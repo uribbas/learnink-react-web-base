@@ -1,7 +1,9 @@
 import React from 'react';
 import firebase, {storage, auth } from '../../provider/database';
 import { shuffleArray, getQuestions } from '../../provider/question';
-import Latex from 'react-latex';
+import {replaceImageWithUrl} from '../../provider/question';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 import Upload from '../../assets/icons/publish-black-48dp.svg';
 import closeIcon from '../../assets/icons/close-black-48dp.svg';
@@ -68,18 +70,18 @@ class ViewPracticeQuestion extends React.Component {
   componentDidMount = async ()=> {
     // Typical usage (don't forget to compare props):
     this.setState({loader: true});
-    let question = await getQuestions(this.props, true);
-    console.log("componentDidMount getQuestions", question);
-    this.setState({loader: false, editMode: false , question: question ? question : []});
+    let question = await getQuestions(this.props, 12, true);
+    console.log("componentDidMount getQuestions", question, this.props.qdData);
+    this.setState({loader: false, editMode: false , question: question ? question : [], value:0});
   }
 
   componentDidUpdate= async (prevProps)=>{
     if(this.props.chapter !== prevProps.chapter){
       // console.log("componentDidUpdate view practice question", this.props.question.questionSequenceId)
       this.setState({loader: true});
-      let question = await getQuestions(this.props, true);
+      let question = await getQuestions(this.props, 12, true, );
       console.log("componentDidUpdate getQuestions", question);
-      this.setState({loader: false,editMode: false , question: question ? question : []});
+      this.setState({loader: false,editMode: false , question: question ? question : [], value:0});
     }
   }
 
@@ -119,7 +121,7 @@ class ViewPracticeQuestion extends React.Component {
             </GridCell>
             <GridCell phone={4} tablet={8} desktop={12} style={{padding: '0.4rem 1rem'}}>
               <Typography use="body1" tag="span">
-                <Latex>No questions found for the selected chapter</Latex>
+                <Latex trust={true} >No questions found for the selected chapter</Latex>
               </Typography>
             </GridCell>
           </GridRow>
@@ -152,7 +154,7 @@ class ViewPracticeQuestion extends React.Component {
                   </GridCell>
                   <GridCell phone={4} tablet={8} desktop={6} style={{padding: '0.4rem 1rem'}}>
                     <Typography use="body1" tag="span">
-                      <Latex>{q.question}</Latex>
+                      <Latex trust={true} >{replaceImageWithUrl(q.question,q.photos)}</Latex>
                     </Typography>
                   </GridCell>
                   <GridCell phone={4} tablet={8} desktop={5} style={{padding: '0.4rem 0.5rem'}}>
@@ -166,7 +168,7 @@ class ViewPracticeQuestion extends React.Component {
                                 checked={this.state.answer === q.answer[k]}
                                 onChange={evt => this.setState({answer: evt.currentTarget.value})}
                               >
-                                <Latex>{q.answer[k]}</Latex>
+                                <Latex trust={true} >{replaceImageWithUrl(q.answer[k], q.photos)}</Latex>
                               </Radio>
                             </GridCell>
                           );

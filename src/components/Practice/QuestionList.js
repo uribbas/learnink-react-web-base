@@ -4,7 +4,8 @@ import Categories from '../Categories/Categories';
 import StandardQuestion from '../StandardQuestion/StandardQuestion';
 import MatchQuestion from '../MatchQuestion/MatchQuestion';
 
-import Latex from 'react-latex';
+// import Latex from 'react-latex';
+import Latex from '../../provider/latex';
 
 // material UI
 import Left from '../../assets/icons/chevron_left-black-48dp.svg';
