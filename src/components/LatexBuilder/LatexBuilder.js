@@ -4,6 +4,7 @@ import Latex from '../../provider/latex';
 import * as moment from 'moment';
 import Logo from '../../assets/icons/learnink-logo_500.png';
 import AddPhoto from '../../assets/icons/add_photo_alternate-black-48dp.svg';
+import Loader from '../../assets/icons/loader.gif';
 import ImageBuilder from './ImageBuilder';
 // material UI
 import {
@@ -33,7 +34,10 @@ class LatexBuilder extends React.Component {
       dummy: false,
       showPhotoFilter: false,
       selectedPhoto: null,
+      showCoomonPhotoFilter: false,
+      selectedCommonPhoto: null,
       question: null,
+      commonasset: {photos:[]},
     }
 
     this.latexItems=[
@@ -42,15 +46,18 @@ class LatexBuilder extends React.Component {
       {name: ' + ', text: ' + '},
       {name: ' - ', text: ' - '},
       {name: ' = ', text: ' = '},
+      {name: ' \\% ', text: ' \\% '},
       {name: ' a + b\\over c ', text: ' \\over '},
       {name: ' x^{ y } ', text: ' ^{ expression } '},
       {name: ' \\sqrt {x} ', text: ' \\sqrt {expression} '},
       {name: ' x^{ \\circ } ', text: ' ^{ \\circ } '},
+      {name: ' \\angle ', text: ' \\angle '},
       {name: ' \\frac { x } { y } ', text: ' \\frac { numerator } { denominator } '},
       {name: ' X _{ n } ', text: ' _{ expression } '},
       {name: ' () ', text: ' ( expression ) '},
       {name: ' \\{\\} ', text: ' \{ expression \} '},
       {name: ' [] ', text: ' [ expression ] '},
+      {name: ' \\color {red} Ab', text: ' \\color {red} '},
       {name: ' ↵ ', text: ' $\\\\$ '},
       {name: ' fx ',text: ' $ expression $ '},
       // {name: '', icon: Logo, text: ' <img src=\"address\" width="20" \/> '}
@@ -64,28 +71,40 @@ class LatexBuilder extends React.Component {
   }
 
   componentDidMount(){
-    const { question } = this.props;
-    this.setState({question});
+    const { question, commonasset } = this.props;
+    this.setState({question, commonasset});
   }
 
   componentDidUpdate(prevProps){
     if(this.props !== prevProps){
-      const { question } = this.props;
-      this.setState({question});
+      const { question, commonasset } = this.props;
+      this.setState({question, commonasset});
     }
   }
 
-  onUploadPhoto(uploadData){
-    let {question} = this.state;
+  onUploadPhoto(uploadData, origin, description){
+    let {question,commonasset} = this.state;
     let imageID = 'IMAGE' + moment().valueOf().toString();
-    question.photos.push({name: imageID , url: null, status: 'NEW', ...uploadData});
-    this.setState({question});
+    console.log("Origin photo description", origin, description);
+    // question.photos.push({name: imageID , url: null, status: 'NEW', ...uploadData, origin, description});
+    if(origin=='Common'){
+      if(commonasset && commonasset.photos){
+        commonasset.photos.push({name: imageID , url: null, status: 'NEW', ...uploadData, origin, description});
+      } else {
+        Object.assign(commonasset,{photos:[]});
+        commonasset.photos.push({name: imageID , url: null, status: 'NEW', ...uploadData, origin, description});
+      }
+    } else {
+      question.photos.push({name: imageID , url: null, status: 'NEW', ...uploadData, origin, description});
+    }
+    this.setState({question, commonasset});
   }
-  onUpdateStatusPhoto(index, action){
-    let {question} = this.state;
-    question.photos[index].status = action;
+
+  // update the status based changes
+  onUpdateStatusPhoto(index, action, origin){
+    let {question, commonasset} = this.state;
     if(action=='DELETE'){
-      let image = question.photos[index].name;
+      let image = origin=='Common' ? commonasset.photos[index].name : question.photos[index].name;
       let newImgTxt = '';
       // let oldText = "(<\s*" + image + "[^>]*)/\s*>";
       let oldText = "(\\\\\includegraphics)[^}]*" + image + "}";
@@ -93,16 +112,32 @@ class LatexBuilder extends React.Component {
       // // question.question = question.question.replace(new RegExp(oldText,'g'),newImgTxt );
       // console.log("oldText", oldText, question.question, );
       this.replaceTextHandler(oldText, newImgTxt,question);
+      if(origin=='Common'){
+        let idx = question.photos.findIndex(p=>p.name==image);
+        console.log("origin Common", idx, question.photos[idx]);
+        if(idx !=-1){
+          question.photos[idx].origin = 'Question';
+          commonasset.photos.splice(index,1);
+        }
+      }
+      this.setState({question, commonasset});
     } else {
       // console.log("photos", question.photos);
+      question.photos[index].status = action;
       this.setState({question});
     }
 
   }
 
-  onInsertPhotoInQuestion(image){
+  onInsertPhotoInQuestion(image,origin){
+    let {question} = this.state;
     // let text = "<" + image.name + " width=\"80\" \\/>"
-    let text = "\\includegraphics[height=40px]{" + image.name + "}";
+    let text = "\\includegraphics[height=40px, alt=\"Loading...\"]{" + image.name + "}";
+    // check if its from commonasset, whether its already added else add it to the list
+    let idx = question.photos.findIndex(p=>p.name==image.name);
+    if(idx == -1){
+      question.photos.push({...image});
+    }
     this.parentHandler(text);
   }
 
@@ -134,8 +169,9 @@ class LatexBuilder extends React.Component {
   }
 
   render(){
-    let {question} = this.state;
-    const { showPhotoFilter, selectedPhoto } = this.state;
+    let {question, commonasset} = this.state;
+    console.log("commonasset", commonasset);
+    const { showPhotoFilter, selectedPhoto, showCoomonPhotoFilter, selectedCommonPhoto } = this.state;
     if(!question){
       return <></>
     }
@@ -146,7 +182,7 @@ class LatexBuilder extends React.Component {
         textAlign: 'center'
       }}>
       <ImageBuilder
-        title={''}
+        title={'Question'}
         defaultIcon={AddPhoto}
         items={question.photos}
         selectedItem={selectedPhoto}
@@ -168,6 +204,26 @@ class LatexBuilder extends React.Component {
             this.createLatexItems()
           }
         {/* </GridRow> */}
+        {/* switching it off for the timebeing */}
+        {/* <ImageBuilder
+          title={'Common'}
+          defaultIcon={Logo}
+          isSearchable={true}
+          items={commonasset.photos}
+          selectedItem={selectedCommonPhoto}
+          open={showCoomonPhotoFilter}
+          onInsertPhotoInQuestion={this.onInsertPhotoInQuestion}
+          onUploadPhoto={this.onUploadPhoto}
+          onUpdateStatusPhoto={this.onUpdateStatusPhoto}
+          onOpen={()=>this.setState({showCoomonPhotoFilter: true})}
+          onClose={()=>this.setState({showCoomonPhotoFilter: false})}
+          style={{
+            margin: '0.1rem',
+            textTransform: 'none',
+            // zoom: '0.75',
+            // '-moz-transform' : 'scale(0.75)',
+          }}
+        /> */}
 
       </div>
     );

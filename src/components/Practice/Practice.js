@@ -84,7 +84,7 @@ class Practice extends React.Component {
             grades.push(doc.data());
         });
         console.log("Grades fetched: ", grades);
-        let selectedGrade = { gradeId: grades[0].gradeId, name: grades[0].name, url: grades[0].gradeImageUrl }
+        let selectedGrade = null; //{ gradeId: grades[0].gradeId, name: grades[0].name, url: grades[0].gradeImageUrl }
         this.setState({grades,showCardAction, selectedGrade, loader: false}, ()=>this.getSubjects());
     });
   }
@@ -211,54 +211,114 @@ class Practice extends React.Component {
               </GridCell>
               <GridRow>
                 <GridCell phone={4} tablet={8} desktop={12} >
-                  <RadioFilter
-                    title={'Select Grade'}
-                    items={grades.map(g=>{return(g ? {gradeId: g.gradeId, name: g.name, url: g.gradeImageUrl} : null)})}
-                    selectedItem={selectedGrade}
-                    open={showGradeFilter}
-                    onChange={(selectedGrade)=>this.setState({selectedGrade, selectedSubject: null, selectedChapter: null, showGradeFilter: false},()=>this.getSubjects())}
-                    onOpen={()=>this.setState({showGradeFilter: true})}
-                    onClose={()=>this.setState({showGradeFilter: false})}
-                  />
-                  <RadioFilter
-                    title={'Select subject'}
-                    defaultIcon={SubjectIcon}
-                    items={subjects.map(s=>{return(s ?
-                                                   {gradeId: s.gradeId, subjectId: s.subjectId,
-                                                     name: s.subjectName, url: s.subjectImageUrl}
-                                                     : null)})}
-                    selectedItem={selectedSubject}
-                    open={showSubjectFilter}
-                    onChange={(selectedSubject)=>this.setState({selectedSubject, selectedChapter: null, showSubjectFilter: false},()=>this.getChapters())}
-                    onOpen={()=>this.setState({showSubjectFilter: true})}
-                    onClose={()=>this.setState({showSubjectFilter: false})}
-                  />
-                  <RadioFilter
-                    title={'Select chapter'}
-                    defaultIcon={ChapterIcon}
-                    items={chapters.map(c=>{return(c ?
-                                                   {gradeId: c.gradeId, subjectId: c.subjectId,
-                                                     chapterId: c.chapterId,
-                                                     name: c.chapterTitle, url: c.chapterImageUrl,
-                                                     chapter: c,
-                                                   }
-                                                     : null)})}
-                    selectedItem={selectedChapter}
-                    open={showChapterFilter}
-                    onChange={(selectedChapter)=>{
-                          // if(!userProfile){
-                          //   this.setState({showChapterFilter: false, addQuestion: false})
-                          //   aphRef.handleOpenSignIn(true);
-                          // } else {
-                          //   this.setState({selectedChapter, showChapterFilter: false, addQuestion: false})
-                          // }
-                          // call function with origin as filter
-                          this.onSelectChapter(selectedChapter.chapter);
-                        }
-                      }
-                    onOpen={()=>this.setState({showChapterFilter: true})}
-                    onClose={()=>this.setState({showChapterFilter: false})}
-                  />
+                  <GridRow>
+                  {
+                    (!selectedSubject) &&
+                      <GridCell phone={4} tablet={8} desktop={6} >
+                        <Card style={{margin: '1rem'}}>
+                          <div style={{ padding: '1rem 1rem 1rem 1rem', }}>
+                            <Typography use="headline4" >
+                              Practice
+                            </Typography>
+                            <br/>
+                            <Typography use="headline6">
+                              makes a man &nbsp;
+                            </Typography>
+                            <Typography use="headline4">
+                              Perfect
+                            </Typography>
+                            <div style={{ padding: '1rem 0rem 2rem 1rem' }}>
+                              <Typography
+                                use="body1" //{ this.state.editItem ? "caption" : "body1" }
+                                tag="div"
+                                theme="textSecondaryOnBackground"
+                                style={{color: "grey",}}
+                              >
+                                <ul>
+                                  <li>Practice is a process of repeating the work regularly to achieve success</li>
+                                  <li>Practice improves your skills and helps you to master a subject</li>
+                                  <li>It's very difficult to achieve a target without commitment and practice</li>
+                                  <li>There is no alternative to hard work and success</li>
+                                </ul>
+                              </Typography>
+                            </div>
+                            <GridRow>
+                              <GridCell phone={4} tablet={8} desktop={12}>
+                                <Button raised
+                                  label={!selectedGrade ? "Let's Practice" : "Continue by selecting Subject"}
+                                  style={{height: '30px', fontSize: '12px', marginTop: '10px', fontWeight: 'bold'}}
+                                  onClick={()=>{
+                                    // aphRef for AppHeader open and close function call
+                                    // this.props.aphRef.handleOpenSignIn(true);
+                                    if(!selectedGrade) {
+                                      this.setState({showGradeFilter: true});
+                                    } else {
+                                      this.setState({showSubjectFilter: true});
+                                    }
+                                    // console.log("aphRef", this.props.aphRef)
+                                  }}
+                                  >
+                                </Button>
+                              </GridCell>
+                            </GridRow>
+                          </div>
+                        </Card>
+                      </GridCell>
+
+                    }
+                    <GridCell phone={4} tablet={ 8 } desktop={!selectedSubject ? 6 : 12} >
+                      <div style={{ padding: '1rem 1rem 0rem 0rem', }}>
+                        <RadioFilter
+                          title={'Select Grade'}
+                          items={grades.map(g=>{return(g ? {gradeId: g.gradeId, name: g.name, url: g.gradeImageUrl} : null)})}
+                          selectedItem={selectedGrade}
+                          open={showGradeFilter}
+                          onChange={(selectedGrade)=>this.setState({selectedGrade, selectedSubject: null, selectedChapter: null, showGradeFilter: false},()=>this.getSubjects())}
+                          onOpen={()=>this.setState({showGradeFilter: true})}
+                          onClose={()=>this.setState({showGradeFilter: false})}
+                        />
+                        <RadioFilter
+                          title={'Select subject'}
+                          defaultIcon={SubjectIcon}
+                          items={subjects.map(s=>{return(s ?
+                                                         {gradeId: s.gradeId, subjectId: s.subjectId,
+                                                           name: s.subjectName, url: s.subjectImageUrl}
+                                                           : null)})}
+                          selectedItem={selectedSubject}
+                          open={showSubjectFilter}
+                          onChange={(selectedSubject)=>this.setState({selectedSubject, selectedChapter: null, showSubjectFilter: false},()=>this.getChapters())}
+                          onOpen={()=>this.setState({showSubjectFilter: true})}
+                          onClose={()=>this.setState({showSubjectFilter: false})}
+                        />
+                        <RadioFilter
+                          title={'Select chapter'}
+                          defaultIcon={ChapterIcon}
+                          items={chapters.map(c=>{return(c ?
+                                                         {gradeId: c.gradeId, subjectId: c.subjectId,
+                                                           chapterId: c.chapterId,
+                                                           name: c.chapterTitle, url: c.chapterImageUrl,
+                                                           chapter: c,
+                                                         }
+                                                           : null)})}
+                          selectedItem={selectedChapter}
+                          open={showChapterFilter}
+                          onChange={(selectedChapter)=>{
+                                // if(!userProfile){
+                                //   this.setState({showChapterFilter: false, addQuestion: false})
+                                //   aphRef.handleOpenSignIn(true);
+                                // } else {
+                                //   this.setState({selectedChapter, showChapterFilter: false, addQuestion: false})
+                                // }
+                                // call function with origin as filter
+                                this.onSelectChapter(selectedChapter.chapter);
+                              }
+                            }
+                          onOpen={()=>this.setState({showChapterFilter: true})}
+                          onClose={()=>this.setState({showChapterFilter: false})}
+                        />
+                      </div>
+                    </GridCell>
+                  </GridRow>
                 </GridCell>
               </GridRow>
               <GridCell phone={4} tablet={8} desktop={12} style={{ padding: '0.5rem 1rem',}}>

@@ -13,6 +13,7 @@ import DashBoard from '../DashBoard/DashBoard';
 import Grade from '../Grade/Grade';
 import Subject from '../Subject/Subject';
 import Chapter from '../Chapter/Chapter';
+import Test from '../Test/Test';
 import Question from '../Question/Question';
 import Practice from '../Practice/Practice';
 import CreateQuestion1 from '../CreateQuestion1/CreateQuestion';
@@ -91,6 +92,7 @@ class RouteComponent extends React.Component {
           <Route path="/chapter" component={()=><Chapter {...allRouterProps}/>}/>
           <Route path="/question" component={()=><Question {...allRouterProps}/>}/>
           <Route path="/practice" component={()=><Practice {...allRouterProps}/>}/>
+          <Route path="/test" component={()=><Test {...allRouterProps}/>}/>
           <Route path="/catalogue" component={()=><MaintainCatalogue {...allRouterProps}/>}/>
           <Route path="/standard-question" component={()=><CreateQuestion1 {...allRouterProps}/>}/>
           <Route path="/match-sides" component={()=><CreateQuestion2 {...allRouterProps}/>}/>

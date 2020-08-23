@@ -1,7 +1,7 @@
 import React from 'react';
 import firebase, {storage, auth } from '../../provider/database';
-import { shuffleArray, getQuestions } from '../../provider/question';
-import {replaceImageWithUrl} from '../../provider/question';
+import { shuffleArray, getQuestions, replaceImageWithUrl } from '../../provider/question';
+import ReviewAssistance from '../ReviewAssistance/ReviewAssistance';
 // import Latex from 'react-latex';
 import Latex from '../../provider/latex';
 
@@ -139,6 +139,8 @@ class ViewPracticeQuestion extends React.Component {
                     style={{
                       background: 'url('+chapter.chapterImageUrl+')',
                       backgroundPosition: 'center',
+                      // borderBottomRightRadius: '30px',
+                      boxShadow: '1px 1px 1.5px 0px rgba(0,0,0,0.14)',
                       }}
                       >
                     <Typography use="subtitle2" tap="span"
@@ -152,21 +154,37 @@ class ViewPracticeQuestion extends React.Component {
                       {q.questionSequenceId}
                     </Typography>
                   </GridCell>
-                  <GridCell phone={4} tablet={8} desktop={6} style={{padding: '0.4rem 1rem'}}>
+                  <GridCell phone={4} tablet={8} desktop={6}
+                    style={{padding: '0.4rem 1rem', paddingBottom: '2rem',
+                            borderBottomRightRadius: '30px',
+                            boxShadow: '1px 1px 0px 0px rgba(0,0,0,0.14)',
+                          }}
+                    >
                     <Typography use="body1" tag="span">
                       <Latex trust={true} >{replaceImageWithUrl(q.question,q.photos)}</Latex>
                     </Typography>
                   </GridCell>
-                  <GridCell phone={4} tablet={8} desktop={5} style={{padding: '0.4rem 0.5rem'}}>
+                  <GridCell phone={4} tablet={8} desktop={6}
+                    style={{padding: '0.4rem 1rem', paddingBottom: '2rem',
+                            // background: 'linear-gradient(40deg, rgb(32, 150, 255), rgb(5, 255, 163))',
+                            // color: '#FFFFFF',
+                            borderBottomRightRadius: '30px',
+                            boxShadow: '1px 1px 0px 0px rgba(0,0,0,0.14)',
+                          }}
+                    >
                     <GridRow>
                       {
+                        !q.isSubmitted &&
                         q.answerArrays.map(k=>{
                           return (
                             <GridCell key={k} phone={4} tablet={8} desktop={12}>
                               <Radio
                                 value={q.answer[k]}
-                                checked={this.state.answer === q.answer[k]}
-                                onChange={evt => this.setState({answer: evt.currentTarget.value})}
+                                checked={q.registeredAnswer == k }
+                                onChange={evt => {
+                                  q.registeredAnswer = k;
+                                  this.setState({question});
+                                }}
                               >
                                 <Latex trust={true} >{replaceImageWithUrl(q.answer[k], q.photos)}</Latex>
                               </Radio>
@@ -175,6 +193,12 @@ class ViewPracticeQuestion extends React.Component {
                         })
                       }
                     </GridRow>
+                    {
+                      q.isSubmitted &&
+                      <ReviewAssistance
+                        question={q}
+                      />
+                    }
                   </GridCell>
                 </GridRow>
             <CardActions>
@@ -201,7 +225,23 @@ class ViewPracticeQuestion extends React.Component {
                     this.onchange(value+1);
                   }}></CardActionButton>
               </CardActionButtons>
-              <CardActionButton type="button" onClick={()=>{}}>Submit</CardActionButton>
+              {
+                !q.isSubmitted &&
+                <CardActionButton type="button"
+                  onClick={()=>{
+                    q.isSubmitted = true;
+                    this.setState({question});
+                  }}>Submit</CardActionButton>
+              }
+              {
+                q.isSubmitted &&
+                <CardActionButton type="button"
+                  onClick={()=>{
+                    // TBA
+                    q.isSubmitted = false;
+                    this.setState({question});
+                  }}>Review</CardActionButton>
+              }
             </CardActions>
           </Card>
         );

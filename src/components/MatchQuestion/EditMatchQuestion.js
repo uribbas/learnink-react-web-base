@@ -60,6 +60,7 @@ class EditMatchQuestion extends React.Component {
       activeTab: 0,
       activeAssistTab: 0,
       question: null,
+      commonasset: {photos:[]},
       loader: false,
     }
     this.tref = null;
@@ -150,7 +151,7 @@ class EditMatchQuestion extends React.Component {
     let {question} = this.state;
     this.setState({loader: true});
     // create the question
-    let newPhotos = question.photos.filter(p=>p.status=='NEW' && !p.url);
+    let newPhotos = question.photos.filter(p=>p.status=='NEW' && !p.url && p.origin != 'Common');
     await Promise.all(newPhotos.map(np=>{
                         // check whether photo is changed
                         let fileExtn = np.raw.name.split('.')[1];
@@ -167,9 +168,31 @@ class EditMatchQuestion extends React.Component {
       photo.url = np.url;
       photo.status = "EXISTING";
     });
-    let deletePhotos = question.photos.filter(p=>p.status=='DELETE' && p.url);
-
-    await Promise.all(deletePhotos.map(np=>{
+    // New common photos
+    let newCommonPhotos = question.photos.filter(p=>p.status=='NEW' && !p.url && p.origin == 'Common');
+    await Promise.all(newCommonPhotos.map(np=>{
+                        // check whether photo is changed
+                        let fileExtn = np.raw.name.split('.')[1];
+                        // console.log("Raw file name", raw.name, fileExtn, `/images/grade/${grade.gradeId}/gradeImage.${fileExtn}`);
+                        let path = `/images/commonasset/${np.name}.${fileExtn}`;
+                        return putStorageItem(path,np.raw, np);
+                  }));
+    console.log("new common upload photos", newCommonPhotos);
+    newCommonPhotos.forEach(np=>{
+      let idx =  question.photos.findIndex(ph=>ph.name==np.name);
+      let photo = question.photos[idx];
+      delete photo.raw;
+      delete photo.preview;
+      photo.url = np.url;
+      photo.origin = 'Question';
+      photo.status = "EXISTING";
+    });
+    let deletePhotos = question.photos.filter(p=>{
+                              let photoTag = "(\\\\\includegraphics)[^}]*" + p.name + "}";
+                              return p.url && !JSON.stringify(question).match(new RegExp(photoTag,'g'));
+                            });
+    // delete from drive only non Cmmon files
+    await Promise.all(deletePhotos.filter(dp=>dp.origin!='Common').map(np=>{
                         return removeStorageItem(np.url);
                   }));
     deletePhotos.forEach(np=>{
@@ -246,7 +269,7 @@ class EditMatchQuestion extends React.Component {
   }
 
   selectedQuestion(){
-    const {question, focusField, loader} = this.state;
+    const {question, commonasset, focusField, loader} = this.state;
     console.log("view question", question, this.question);
     if(!question){
       return <></>
@@ -304,6 +327,7 @@ class EditMatchQuestion extends React.Component {
                       focusField == 'tref' &&
                       <LatexBuilder
                         question={question}
+                        commonasset={commonasset}
                         replaceTextHandler={(oldText,newText, question)=>{
                           if(!question){
                             let {question} = this.state;
@@ -371,6 +395,7 @@ class EditMatchQuestion extends React.Component {
                       focusField == 'matchTextRef' &&
                       <LatexBuilder
                         question={question}
+                        commonasset={commonasset}
                         replaceTextHandler={(oldText,newText, question)=>{
                           if(!question){
                             let {question} = this.state;
@@ -425,6 +450,7 @@ class EditMatchQuestion extends React.Component {
                       focusField == 'answerTextRef' &&
                       <LatexBuilder
                         question={question}
+                        commonasset={commonasset}
                         replaceTextHandler={(oldText,newText, question)=>{
                           if(!question){
                             let {question} = this.state;
@@ -513,6 +539,7 @@ class EditMatchQuestion extends React.Component {
             </GridRow>
             <QuestionAssistanceModerator
               {...this.props}
+              commonasset={commonasset}
               actions={[
                 <CardActionButton type="button" onClick={()=>{this.onClickCancel();}}>Cancel</CardActionButton>,
                   <CardActionButton type="submit"

@@ -89,6 +89,11 @@ class Categories extends React.Component {
             </Typography>
           </GridCell>
         }
+        <GridCell phone={1} tablet={8} desktop={10} style={{margin: '-1rem 0', cursor: 'pointer'}}>
+          <Typography use="body2" tag="p">
+            <NavLink to="/test" style={{textDecorationLine: 'none'}}>Tests</NavLink>
+          </Typography>
+        </GridCell>
 
     </GridRow>
     );

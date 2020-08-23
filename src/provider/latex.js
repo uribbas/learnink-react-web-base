@@ -19,7 +19,7 @@ const latexify = (string, options) => {
         let renderedString;
         try {
             // returns HTML markup
-            console.log("Options", options);
+            // console.log("Options", options);
             renderedString = katex.renderToString(
                 s,
                 t === "block" ? Object.assign({ displayMode: true }, options) : options

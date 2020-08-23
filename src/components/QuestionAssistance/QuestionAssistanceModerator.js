@@ -57,6 +57,7 @@ class QuestionAssistanceModerator extends React.Component {
       activeTab: 0,
       activeAssistTab: 0,
       question: null,
+      commonasset: null,
       loader: false,
     }
     this.tref = null;
@@ -74,7 +75,9 @@ class QuestionAssistanceModerator extends React.Component {
     console.log("EditStandardQuestion componentDidMount",this.props.question)
     this.question = this.props.question;
     this.qdData = this.props.qdData;
-    this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {}});
+    this.commonasset = this.props.commonasset;
+    this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {},
+                    commonasset: this.commonasset});
   }
 
   componentDidUpdate(prevProps){
@@ -83,7 +86,9 @@ class QuestionAssistanceModerator extends React.Component {
       console.log("EditStandardQuestion componentDidUpdate inside if",this.props.question)
       this.question = this.props.question;
       this.qdData = this.props.qdData;
-      this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {}});
+      this.commonasset = this.props.commonasset;
+      this.setState({editMode: true , qdData: this.qdData, question: this.question ? {...this.question} : {},
+                      commonasset: this.commonasset});
     }
   }
 
@@ -152,7 +157,7 @@ class QuestionAssistanceModerator extends React.Component {
   }
 
   renderAssistance(){
-    const {question, focusField, loader} = this.state;
+    const {question, focusField, loader, commonasset} = this.state;
     console.log("view question", question, this.question);
     if(!question){
       return <></>
@@ -218,6 +223,7 @@ class QuestionAssistanceModerator extends React.Component {
                         focusField == 'hinttref' &&
                         <LatexBuilder
                           question={question}
+                          commonasset={commonasset}
                           replaceTextHandler={(oldText,newText, question)=>{
                             if(!question){
                               let {question} = this.state;
@@ -274,6 +280,7 @@ class QuestionAssistanceModerator extends React.Component {
                         focusField == 'hintanstref' &&
                         <LatexBuilder
                           question={question}
+                          commonasset={commonasset}
                           replaceTextHandler={(oldText,newText, question)=>{
                             if(!question){
                               let {question} = this.state;
@@ -344,6 +351,7 @@ class QuestionAssistanceModerator extends React.Component {
                         focusField == 'correctFeedbacktref' &&
                         <LatexBuilder
                           question={question}
+                          commonasset={commonasset}
                           replaceTextHandler={(oldText,newText, question)=>{
                             if(!question){
                               let {question} = this.state;
@@ -414,6 +422,7 @@ class QuestionAssistanceModerator extends React.Component {
                         focusField == 'wrongFeedbacktref' &&
                         <LatexBuilder
                           question={question}
+                          commonasset={commonasset}
                           replaceTextHandler={(oldText,newText, question)=>{
                             if(!question){
                               let {question} = this.state;

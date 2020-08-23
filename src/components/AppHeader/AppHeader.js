@@ -54,13 +54,19 @@ class AppHeader extends React.Component {
             <NavLink to="/" style={{textDecorationLine: 'none'}}><TopAppBarNavigationIcon icon={Logo}/></NavLink>
             {/* <img src={Logo} style={{marginLeft: '1rem', height: '45px',}}/> */}
             <TopAppBarTitle>
-              <Typography use="headline4" style={{marginLeft: '0rem', fontWeight: 'bold'}}>
+              <Typography use="headline4"
+                style={{
+                  marginLeft: '0rem',
+                  fontWeight: 'bold',
+                  // fontFamily: '\'Just Another Hand\''
+                }}>
                 Learnink
               </Typography>
             </TopAppBarTitle>
           </TopAppBarSection>
           <TopAppBarSection alignEnd>
-            <TopAppBarActionItem icon={userAuth ? Science : Login } style={{color: '#000000'}} onClick={()=>{this.handleOpenSignIn(true);}}/>
+            {/* <TopAppBarActionItem icon={userAuth ? Science : Login } style={{color: '#000000'}} onClick={()=>{this.handleOpenSignIn(true);}}/> */}
+            <TopAppBarActionItem icon={userAuth ? "menu" : Login } style={{color: '#000000'}} onClick={()=>{this.handleOpenSignIn(true);}}/>
           </TopAppBarSection>
         </TopAppBarRow>
       </TopAppBar>
